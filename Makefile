@@ -8,8 +8,9 @@ NORMALIZED := $(abspath data/corpora/$(CORPUS)/normalized/)
 METADATA  := $(NORMALIZED)/$(CORPUS).jsonl
 PREMALLET := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX).tsv
 CLEAN   := $(wildcard $(NORMALIZED)/$(CORPUS)/*.clean.txt) #I am assuming the OCRNormalizer has been run
-STEMMED := $(addsuffix .stemmed, $(CLEAN))
-LEMMATIZED := $(addsuffix .lemmatized, $(CLEAN))
+DEPUNCTUATED := $(addsuffix .depunctuated, $(CLEAN))
+STEMMED := $(addsuffix .stemmed, $(DEPUNCTUATED))
+LEMMATIZED := $(addsuffix .lemmatized, $(DEPUNCTUATED))
 
 TRUNCATED := $(LEMMATIZED) #change these two together -- must be STEMMED/stemmed or LEMMATIZED/lemmatized
 TRUNC_SUFFIX := lemmatized
@@ -41,11 +42,16 @@ $(MALLET_FILE): $(PREMALLET) | $(MALLETIZED)
 $(PREMALLET): hatori_data.py $(METADATA) $(DESTOPPED)
 	python3 $< $(METADATA) --text-dir $(NORMALIZED)/$(CORPUS) --text-suffix .clean.txt.$(TRUNC_SUFFIX).destopped --strip-json $(METADATA).stripped > $@
 
+depunctuated: $(DEPUNCTUATED)
+
 destopped: $(DESTOPPED)
 
 stemmed: $(STEMMED)
 
 lemmatized: $(LEMMATIZED)
+
+%.depunctuated: lemmastemma/depunctuator.py
+	$< $*
 
 %.destopped: lemmastemma/destopper.py %
 	$< $*
