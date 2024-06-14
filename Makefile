@@ -10,7 +10,7 @@ PREMALLET := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX).tsv
 CLEAN   := $(wildcard $(NORMALIZED)/$(CORPUS)/*.clean.txt) #I am assuming the OCRNormalizer has been run
 DEPUNCTUATED := $(addsuffix .depunctuated, $(CLEAN))
 STEMMED := $(addsuffix .stemmed, $(DEPUNCTUATED))
-LEMMATIZED := $(addsuffix $(STRIP_ENTITIES).lemmatized, $(DEPUNCTUATED)) #If we change DEPUNCTUATED here, we must make a matching change in the $(LEMMATIZED) group rule, below
+LEMMATIZED := $(addsuffix $(STRIP_ENTITIES).lemmatized, $(DEPUNCTUATED))
 
 TRUNCATED := $(LEMMATIZED) #change these two together -- must be STEMMED/stemmed or LEMMATIZED/lemmatized
 TRUNC_SUFFIX := lemmatized
@@ -60,14 +60,8 @@ lemmatized: $(LEMMATIZED)
 	$< $*
 
 #make STRIP_ENTITIES='--strip_entities' to get the lemmatizer to strip all named entities
-#I'm not proud of this one. We group the lemmatized files so that we only pay the startup
-#cost of loading a transformer model once. This requires explicitly listing the dependencies,
-#as I don't have a neat way to derive them as I do for the rules above. So if the variables at
-#the start of this file are rearranged in such a fashion that the lemmatizer does not run on
-#the depunctuated files, we must update this rule as well.
-#This also means that just one dependency changing will cause of the dependencies to need rebuilding.
-$(LEMMATIZED) &: lemmastemma/lemmatizer.py $(DEPUNCTUATED)
-	$^ $(STRIP_ENTITIES)
+%.lemmatized: lemmastemma/lemmatizer.py %
+	$< $(STRIP_ENTITIES) $*
 
 $(MALLETIZED):
 	mkdir $@
