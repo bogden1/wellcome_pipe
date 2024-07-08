@@ -168,7 +168,7 @@ with open(args.output, 'w') as f:
 #create map from concept id to label
 path, ext = os.path.splitext(args.output)
 with open(os.path.basename(path) + '_map.json', 'w') as f:
-  print(json.dumps(concept_map, indent = 2), file = f)
+  json.dump(concept_map, f, indent = 2)
 
 #dump some stats
 for k, v in count.items():
