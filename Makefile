@@ -21,7 +21,8 @@ MALLETIZED = $(abspath $(NORMALIZED)/../malletized)
 TOPICS_COUNT := 500
 PREFIX := $(MALLETIZED)/$(CORPUS)_$(TRUNC_SUFFIX)_$(OUT_SUFFIX)
 MALLET_FILE        := $(PREFIX).mallet
-TOPICS_FILE        := $(PREFIX)-topic_state_$(TOPICS_COUNT).gz
+TOPICS_PREFIX      := $(PREFIX)-topic_state_$(TOPICS_COUNT)
+TOPICS_FILE        := $(TOPICS_PREFIX).gz
 TOPICS_KEYS        := $(PREFIX)-keys_$(TOPICS_COUNT).txt
 TOPICS_DOC         := $(PREFIX)-composition_$(TOPICS_COUNT).txt
 TOPICS_WEIGHTS     := $(PREFIX)-topic_work_weights_$(TOPICS_COUNT)
@@ -29,7 +30,11 @@ TOPICS_DIAGNOSTICS := $(PREFIX)-diagnostics_$(TOPICS_COUNT).txt
 MALLET_BIN := /home/bogden/Downloads/Mallet-202108/bin/mallet
 MALLET_MEM := 10g
 
-all: topics subjects
+DATAFRAMES := $(TOPICS_PREFIX).df $(TOPICS_PREFIX)_counts.df $(TOPICS_PREFIX)_sums.df $(TOPICS_PREFIX)_freqs.df $(TOPIC_PREFIX)_freqs.csv
+
+all: topics subjects dataframes
+
+dataframes: $(DATAFRAMES)
 
 subjects: $(SUBJECTS).tsv $(SUBJECTS)_map.json $(SUBJECTS).LOG
 
@@ -38,6 +43,11 @@ topics: $(TOPICS_FILE)
 mallet_file: $(MALLET_FILE)
 
 tsv: $(PREMALLET)
+
+#Grouped target: one invocation builds all targets
+#TODO: Add args to the tool to allow building the targets independently
+$(DATAFRAMES) &: dataframes.py $(TOPICS_FILE)
+	python3 $< $(TOPICS_FILE) --force
 
 $(SUBJECTS).tsv $(SUBJECTS)_map.json $(SUBJECTS).LOG: decorate_subjects.py $(PREMALLET)
 	python3 $< --pre-mallet $(PREMALLET) --output $(SUBJECTS).tsv &> $(SUBJECTS).LOG
