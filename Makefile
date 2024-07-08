@@ -18,8 +18,11 @@ TRUNC_SUFFIX := lemmatized
 
 DESTOPPED := $(addsuffix .destopped, $(TRUNCATED))
 MALLETIZED = $(abspath $(NORMALIZED)/../malletized)
+CLOUD_DIR := $(abspath $(NORMALIZED)/../clouds)
 TOPICS_COUNT := 500
-PREFIX := $(MALLETIZED)/$(CORPUS)_$(TRUNC_SUFFIX)_$(OUT_SUFFIX)
+BASE_PREFIX := $(CORPUS)_$(TRUNC_SUFFIX)_$(OUT_SUFFIX)
+CLOUDS := $(CLOUD_DIR)/$(BASE_PREFIX)
+PREFIX := $(MALLETIZED)/$(BASE_PREFIX)
 MALLET_FILE        := $(PREFIX).mallet
 TOPICS_PREFIX      := $(PREFIX)-topic_state_$(TOPICS_COUNT)
 TOPICS_FILE        := $(TOPICS_PREFIX).gz
@@ -32,9 +35,18 @@ MALLET_MEM := 10g
 
 DATAFRAMES := $(TOPICS_PREFIX).df $(TOPICS_PREFIX)_counts.df $(TOPICS_PREFIX)_sums.df $(TOPICS_PREFIX)_freqs.df $(TOPIC_PREFIX)_freqs.csv
 
-all: topics subjects dataframes
+TOPIC_NUMS := $(shell seq 0 $$(($(TOPICS_COUNT) - 1)))
+CLOUD_TOPICS   := $(patsubst %, $(CLOUDS)/topic_%.csv,          $(TOPIC_NUMS)) $(patsubst %, $(CLOUDS)/topic_%.png,          $(TOPIC_NUMS)) $(patsubst %, $(CLOUDS)/topic_%.svg,          $(TOPIC_NUMS))
+
+
+all: topics subjects dataframes clouds
 
 dataframes: $(DATAFRAMES)
+
+clouds: $(CLOUD_TOPICS) #$(CLOUD_SUBJECTS)
+
+$(CLOUD_TOPICS) &: topic_clouds.py _wordcloud.py $(TOPICS_PREFIX)_counts.df
+	python3 topic_clouds.py --force --prefix $(PREFIX) --output-dir $(CLOUD_DIR) $(TOPICS_COUNT)
 
 subjects: $(SUBJECTS).tsv $(SUBJECTS)_map.json $(SUBJECTS).LOG
 
