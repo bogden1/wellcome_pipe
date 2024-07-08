@@ -12,7 +12,7 @@ parser.add_argument('--pre-mallet')
 parser.add_argument('--db', default = 'wellcome_works')
 parser.add_argument('--table', default = 'works')
 parser.add_argument('--data-col', default = 'col1')
-parser.add_argument('--output', default = 'subjects.tsv')
+parser.add_argument('--output', default = 'subjects.json')
 parser.add_argument('--verbose', '-v', action = 'store_true')
 args = parser.parse_args()
  
@@ -97,69 +97,73 @@ label_overrides = {
 assert set(label_alternatives.keys()) == set(label_overrides.keys())
 
 lookup = WorksLookup(args.table, args.data_col, database = args.db)
-with open(args.output, 'w') as out_file:
-  with open(args.pre_mallet) as in_file:
-    for line in in_file:
-      #compute identifier for lookup
-      identifier = line.split('\t', maxsplit = 1)[0] #get the first field (author, short title, identifier)
-      identifier = identifier.split(' ')[-1] #hence this is the actual identifier
-      if len(identifier) != 8:
-        print(f'Skipping bad identifier: {identifier}', file = sys.stderr)
-        count['Invalid identifier'] += 1
-        continue
+output_dict = {}
+with open(args.pre_mallet) as in_file:
+  for line in in_file:
+    #compute identifier for lookup
+    identifier = line.split('\t', maxsplit = 1)[0] #get the first field (author, short title, identifier)
+    identifier = identifier.split(' ')[-1] #hence this is the actual identifier
+    if len(identifier) != 8:
+      print(f'Skipping bad identifier: {identifier}', file = sys.stderr)
+      count['Invalid identifier'] += 1
+      continue
 
-      #do the lookup
-      data = lookup(identifier)
-      if data is None:
-        print(f'No entry for id "{identifier}" in {args.db}:{args.table}[{args.data_col}]', file = sys.stderr)
-        count['Missing in database'] += 1
-        continue
+    #do the lookup
+    data = lookup(identifier)
+    if data is None:
+      print(f'No entry for id "{identifier}" in {args.db}:{args.table}[{args.data_col}]', file = sys.stderr)
+      count['Missing in database'] += 1
+      continue
 
-      #find any subjects (or rather, concepts) in the resulting data
-      subjects = []
-      if 'subjects' in data and len(data['subjects']):
-        assert isinstance(data['subjects'], list)
-        for subject in data['subjects']:
-          if 'concepts' in subject:
-            assert isinstance(subject['concepts'], list)
-            for concept in subject['concepts']:
-              if not 'id' in concept:
-                print(f'Missing id in concept for {identifier}', file = sys.stderr)
-                count['No id in concept'] += 1
-                continue
-              c_id = concept['id']
-              subjects.append(c_id)
+    #find any subjects (or rather, concepts) in the resulting data
+    subjects = []
+    if 'subjects' in data and len(data['subjects']):
+      assert isinstance(data['subjects'], list)
+      for subject in data['subjects']:
+        if 'concepts' in subject:
+          assert isinstance(subject['concepts'], list)
+          for concept in subject['concepts']:
+            if not 'id' in concept:
+              print(f'Missing id in concept for {identifier}', file = sys.stderr)
+              count['No id in concept'] += 1
+              continue
+            c_id = concept['id']
+            subjects.append(c_id)
 
-              #get the label, apply a couple of heuristics to reduce clashes, check we don't contain tabs
-              c_label = concept['label'].lower().strip()
-              if c_label[-1] == '.': c_label = c_label[0:-1]
-              if c_id in label_alternatives:
-                if c_label in label_alternatives[c_id]:
-                  c_label = label_overrides[c_id]
+            #get the label, apply a couple of heuristics to reduce clashes, check we don't contain tabs
+            c_label = concept['label'].lower().strip()
+            if c_label[-1] == '.': c_label = c_label[0:-1]
+            if c_id in label_alternatives:
+              if c_label in label_alternatives[c_id]:
+                c_label = label_overrides[c_id]
 
-              #Add label to concept map
-              if c_id in concept_map:
-                if concept_map[c_id] != c_label:
-                  print(f'Concept id mismatch: {c_id} had label "{concept_map[c_id]}" and now also has "{c_label}" (from {identifier})', file = sys.stderr)
-                  count['Concept id mismatch'] += 1
-              else:
-                concept_map[c_id] = c_label
-      else:
-        if args.verbose: print(f'No subject(s): {identifier}')
-        count['No subject(s)'] += 1
+            #Add label to concept map
+            if c_id in concept_map:
+              if concept_map[c_id] != c_label:
+                print(f'Concept id mismatch: {c_id} had label "{concept_map[c_id]}" and now also has "{c_label}" (from {identifier})', file = sys.stderr)
+                count['Concept id mismatch'] += 1
+            else:
+              concept_map[c_id] = c_label
+    else:
+      if args.verbose: print(f'No subject(s): {identifier}')
+      count['No subject(s)'] += 1
 
-        #Avoid double-counting with 'no concepts' by outputting the result now
-        print(identifier, file = out_file)
-        continue
+      #Avoid double-counting with 'no concepts' by outputting the result now
+      output_dict[identifier] = None
+      continue
 
-      if subjects: 
-        count['At least one concept'] += 1
-      else:
-        if args.verbose: print(f'No concept(s): {identifier}')
-        count['No concept(s)'] += 1
+    if subjects: 
+      count['At least one concept'] += 1
+    else:
+      if args.verbose: print(f'No concept(s): {identifier}')
+      count['No concept(s)'] += 1
 
-      #print result
-      print(identifier, '\t'.join(subjects), sep = '\t', file = out_file)
+    #print result
+    output_dict[identifier] = subjects
+
+#create map for identifier to subject(s)
+with open(args.output, 'w') as f:
+  json.dump(output_dict, f, indent = 2)
 
 #create map from concept id to label
 path, ext = os.path.splitext(args.output)
