@@ -149,6 +149,7 @@ with open(args.pre_mallet) as in_file:
       count['No subject(s)'] += 1
 
       #Avoid double-counting with 'no concepts' by outputting the result now
+      if identifier in output_dict: raise
       output_dict[identifier] = None
       continue
 
@@ -159,6 +160,7 @@ with open(args.pre_mallet) as in_file:
       count['No concept(s)'] += 1
 
     #print result
+    if identifier in output_dict: raise
     output_dict[identifier] = subjects
 
 #create map for identifier to subject(s)
