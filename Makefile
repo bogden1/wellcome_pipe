@@ -48,7 +48,7 @@ clouds: $(CLOUD_TOPICS) #$(CLOUD_SUBJECTS)
 $(CLOUD_TOPICS) &: topic_clouds.py _wordcloud.py $(TOPICS_PREFIX)_counts.df
 	python3 topic_clouds.py --force --prefix $(PREFIX) --output-dir $(CLOUD_DIR) $(TOPICS_COUNT)
 
-subjects: $(SUBJECTS).tsv $(SUBJECTS)_map.json $(SUBJECTS).LOG
+subjects: $(SUBJECTS).json $(SUBJECTS)_map.json $(SUBJECTS).LOG
 
 topics: $(TOPICS_FILE)
 
@@ -61,8 +61,8 @@ tsv: $(PREMALLET)
 $(DATAFRAMES) &: dataframes.py $(TOPICS_FILE)
 	python3 $< $(TOPICS_FILE) --force
 
-$(SUBJECTS).tsv $(SUBJECTS)_map.json $(SUBJECTS).LOG: decorate_subjects.py $(PREMALLET)
-	python3 $< --pre-mallet $(PREMALLET) --output $(SUBJECTS).tsv &> $(SUBJECTS).LOG
+$(SUBJECTS).json $(SUBJECTS)_map.json $(SUBJECTS).LOG &: decorate_subjects.py $(PREMALLET)
+	python3 $< --pre-mallet $(PREMALLET) --output $(SUBJECTS).json &> $(SUBJECTS).LOG
 
 $(TOPICS_FILE): $(MALLET_FILE)
 	MALLET_MEMORY=$(MALLET_MEM) $(MALLET_BIN) train-topics --input $< --num-topics $(TOPICS_COUNT) --optimize-interval 10 --output-state $@ --output-topic-keys $(TOPICS_KEYS) --output-doc-topics $(TOPICS_DOC) --random-seed 999 --topic-word-weights-file $(TOPICS_WEIGHTS) --diagnostics-file $(TOPICS_DIAGNOSTICS)
