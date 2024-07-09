@@ -43,6 +43,14 @@ Because `works.json` is very large and not suited to random access queries, it r
 9) `for x in json/*; do echo "spyql -Jworks=$x -O table=works 'select .id as id, * from works to sql' > sql/`basename ${x}`.sql"; done | parallel` #create files of SQL insert statements
 10) `for x in sql/*; do echo "psql wellcome_works < $x"; done | sh` #Check output of this for SQL errors (e.g. data column not big enough)
 
+psql installation (steps 1 and 2) may look something like:
+1) `sudo apt install postgresql`
+2) `sudo -u postgres createdb wellcome_works`
+3) `sudo -u postgres createuser $USER`
+4) `sudo -u postgres psql wellcome_works`
+4) `grant all privileges on database wellcome_works to bogden;` #if bogden is your username
+5) `grant all on schema public to bogden;`
+
 ## works\_lookup.py
 
 Looks up works (by identifier) in the database described under `decorate_subjects.py`, above. Dumps results as JSON to stdout or to files in a directory.
