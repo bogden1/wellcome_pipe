@@ -12,7 +12,7 @@ parser.add_argument('--pre-mallet')
 parser.add_argument('--db', default = 'wellcome_works')
 parser.add_argument('--table', default = 'works')
 parser.add_argument('--data-col', default = 'col1')
-parser.add_argument('--output', default = 'subjects.json')
+parser.add_argument('--output-subjects', default = 'subjects.json')
 parser.add_argument('--verbose', '-v', action = 'store_true')
 args = parser.parse_args()
  
@@ -164,11 +164,11 @@ with open(args.pre_mallet) as in_file:
     output_dict[identifier] = subjects
 
 #create map for identifier to subject(s)
-with open(args.output, 'w') as f:
+with open(args.output_subjects, 'w') as f:
   json.dump(output_dict, f, indent = 2)
 
 #create map from concept id to label
-with open(os.path.splitext(args.output)[0] + '_map.json', 'w') as f:
+with open(os.path.splitext(args.output_subjects)[0] + '_map.json', 'w') as f:
   json.dump(concept_map, f, indent = 2)
 
 #dump some stats
