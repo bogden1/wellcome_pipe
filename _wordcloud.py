@@ -34,4 +34,3 @@ def draw(freqs, fnam, colorize = False, dark = 0.5):
     wc.to_image().save(fnam + '.png')
     with open(fnam + '.svg', 'w') as f:
       print(wc.to_svg(), file = f)
-
