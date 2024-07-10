@@ -24,7 +24,7 @@ def draw(freqs, fnam, colorize = False, dark = 0.5):
       'stopwords': {},
       'background_color': None,
       'relative_scaling': 1.0,
-      'min_font_size': 10, #nb this effectively sets a 'minimum importance' threshold -- but word/phrase/term length is also a factor
+      'min_font_size': 15, #nb this effectively sets a 'minimum importance' threshold -- but word/phrase/term length is also a factor
       'normalize_plurals': False,
       'mode': 'RGBA',
     }
