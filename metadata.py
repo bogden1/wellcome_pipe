@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-#Given a tsv file generated from hatori_data.py (i.e. PREMALLET in the Makefile), generate a new tsv with extra data from works.json
+#Given a tsv file generated from hatori_data.py (i.e. PREMALLET in the Makefile),
+#generate json files with extra data from works.json. Relies on availability of
+#a database -- see README.md for instructions about that.
 
 import os
 import sys
