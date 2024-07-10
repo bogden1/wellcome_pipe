@@ -24,13 +24,14 @@ args = parser.parse_args()
  
 concept_map = {}
 count = {
-  'Invalid identifier':   0,
-  'Missing in database':  0,
-  'No subject(s)':        0,
-  'No concept(s)':        0,
-  'No id in concept':     0,
-  'At least one concept': 0,
-  'Concept id mismatch':  0,
+  'Invalid identifier':     0,
+  'Missing in database':    0,
+  'No subject(s)':          0,
+  'No concept(s)':          0,
+  'No id in concept':       0,
+  'At least one concept':   0,
+  'Concept id mismatch':    0,
+  'Uniqued short titles': 0,
 }
 label_alternatives = {
   'ujjp8gyr': {
@@ -150,6 +151,7 @@ with open(args.pre_mallet) as in_file:
             decrement += 1
           short_title = short_title[0:-decrement] + str(ext)
         print(f"Extended {identifier}'s already-seen short title {short_title[0:-decrement]} with {short_title[-decrement:]}", file = sys.stderr)
+        count['Uniqued short titles'] += 1
       title_dict[identifier]['short'] = short_title
       short_title_dict[short_title] = identifier
 
