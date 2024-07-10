@@ -21,6 +21,9 @@ parser.add_argument('topic_counts',
 parser.add_argument('--prefix',
                     default = '17xx_lemmatized_sorted',
                     help = 'Prefix for document topic composition file(s) e.g. to use "17xx_lemmatized_sorted-composition_*.txt", pass "17xx_lemmatized_sorted"')
+parser.add_argument('--doc-labels',
+                    default = 'data/corpora/example/normalized/titles.json',
+                    help = 'Location of doc id->title map (a decorate_subjects.py output)')
 parser.add_argument('--subject-labels',
                     default = 'data/corpora/example/normalized/subjects_map.json',
                     help = 'Location of subject id->label map (a decorate_subjects.py output)')
@@ -69,11 +72,17 @@ else:
     pickle.dump(metadata, f)
 metadata = metadata.assign(cat_id = metadata['cat_id'].str.split().str[-1]) #get the Wellcome catalogue doc id, given current TSV format
 
+with open(args.doc_labels) as f:
+  doc_labels = {}
+  for k, v in json.load(f).items():
+    doc_labels[k] = v['short']
+
 with open(args.doc_subjects) as f:
   doc_subjs = json.load(f)
 
 with open(args.subject_labels) as f:
   subj_labels = json.load(f)
+
 if NO_SUBJECT_ID in subj_labels:
   print('No subject indicator unexpectedly listed as a real subject id', file = sys.stderr)
   sys.exit(1)
@@ -91,10 +100,22 @@ for topic_count in args.topic_counts:
   topics = list(range(0, n_topics))
   df = pd.read_csv(in_fnam, sep = '\t', index_col = 0, names = ['doc_id', 'author'] + topics).join(metadata, validate = '1:1')
   for topic in topics:
-    out_basename = f'{path}/topic_{topic}_subjects'
+    #initialize dataframes
     doc_proportions = df[[topic, 'cat_id']].rename(columns = lambda x: x if x != topic else 'proportion')
     subj_proportions = doc_proportions.assign(subj_id = doc_proportions['cat_id'].map(doc_subjs)).drop('cat_id', axis = 1)
-    #subj_id col now contains one of:
+
+    #document cloud -- spelled out in more steps for subjects, below
+    #bit more simple for this cloud as we are working with proportions of unique things (each cat id is unique, but there can be multiple subject ids)
+    out_basename = f'{path}/topic_{topic}_docs'
+    doc_proportions['labels'] = doc_proportions.cat_id.map(doc_labels).dropna() #.fillna('<No title>') #we just drop untitled cases (there are very few)
+    doc_proportions = doc_proportions.set_index('labels').drop('cat_id', axis = 1)
+    freqs = np.log(2 + doc_proportions.proportion)
+    freqs.sort_values(ascending = False).to_csv(out_basename + '.csv')
+    wc.draw(freqs.to_dict(), out_basename, args.colorize, args.dark)
+
+    #subject cloud
+    out_basename = f'{path}/topic_{topic}_subjects'
+    #subj_id col of subj_proportions currently contains one of:
     #A list of subject ids for this doc
     #None: this doc id is in the doc->subjects mapping and has no subjects
     #NaN: this doc_id does not exist in the doc->subjects mapping (so I assume this is a bug earlier in the pipeline, generating a bad doc id)
