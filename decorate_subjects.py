@@ -4,8 +4,11 @@
 import os
 import sys
 import json
+import string
 import argparse
 from works_lookup import WorksLookup
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--pre-mallet')
@@ -13,6 +16,7 @@ parser.add_argument('--db', default = 'wellcome_works')
 parser.add_argument('--table', default = 'works')
 parser.add_argument('--data-col', default = 'col1')
 parser.add_argument('--output-subjects', default = 'subjects.json')
+parser.add_argument('--output-titles', default = 'titles.json')
 parser.add_argument('--verbose', '-v', action = 'store_true')
 args = parser.parse_args()
  
@@ -98,6 +102,10 @@ assert set(label_alternatives.keys()) == set(label_overrides.keys())
 
 lookup = WorksLookup(args.table, args.data_col, database = args.db)
 output_dict = {}
+title_dict = {}
+short_title_dict = {}
+stops = set(stopwords.words('english'))
+
 with open(args.pre_mallet) as in_file:
   for line in in_file:
     #compute identifier for lookup
@@ -114,6 +122,34 @@ with open(args.pre_mallet) as in_file:
       print(f'No entry for id "{identifier}" in {args.db}:{args.table}[{args.data_col}]', file = sys.stderr)
       count['Missing in database'] += 1
       continue
+
+    #look up titles
+    if 'title' in data and len(data['title']):
+      if identifier in title_dict: raise
+      if identifier in short_title_dict: raise
+      title = data['title']
+      words = list(filter(lambda x: not x.lower() in stops, word_tokenize(title.translate(str.maketrans('', '', string.punctuation)))))
+      short_title = words.pop(0)
+      while len(short_title) < 30 and len(words):
+        short_title += ' ' + words.pop(0)
+      if len(words):
+        short_title += '...'
+      title_dict[identifier] = {
+        'full':  title,
+      }
+      #ensure unique short titles
+      #TODO perhaps do this for full titles too
+      if short_title in short_title_dict:
+        short_title += '0'
+        decrement = 1
+        while short_title in short_title_dict:
+          ext = int(short_title[-decrement:]) + 1
+          if ext % 10 == 0:
+            decrement += 1
+          short_title = short_title[0:-decrement] + str(ext)
+        print(f"Extended {identifier}'s already-seen short title {short_title[0:-decrement]} with {short_title[-decrement:]}", file = sys.stderr)
+      title_dict[identifier]['short'] = short_title
+      short_title_dict[short_title] = identifier
 
     #find any subjects (or rather, concepts) in the resulting data
     subjects = []
@@ -170,6 +206,12 @@ with open(args.output_subjects, 'w') as f:
 #create map from concept id to label
 with open(os.path.splitext(args.output_subjects)[0] + '_map.json', 'w') as f:
   json.dump(concept_map, f, indent = 2)
+
+with open(args.output_titles, 'w') as f:
+  json.dump(title_dict, f, indent = 2)
+
+with open('short_' + args.output_titles, 'w') as f:
+  json.dump(short_title_dict, f, indent = 2)
 
 #dump some stats
 for k, v in count.items():
