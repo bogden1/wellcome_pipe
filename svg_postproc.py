@@ -33,7 +33,7 @@ for file in args.infiles:
       query = f'{WELLCOME_SEARCH}?subjects.label=%22{text.text.title()}%22'
     elif os.path.splitext(file)[0].endswith('_docs'):
       if text.text in doc_labels:
-        query = f'{WELLCOME}{doc_labels[text.text]}'
+        query = f'figures/pp_{doc_labels[text.text]}.svg'
       else:
         print(f'{text.text} not in short_titles.json, skipping link', file = sys.stderr)
         skipped_links += 1
