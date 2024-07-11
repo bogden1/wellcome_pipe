@@ -49,6 +49,7 @@ parser.add_argument('--output-dir',
 parser.add_argument('--force',
                     action = 'store_true',
                     help = 'Permit writing into an existing directory')
+parser.add_argument('--track-no-subject', action = 'store_true')
 args = parser.parse_args()
 
 #path stuff
@@ -83,11 +84,12 @@ with open(args.doc_subjects) as f:
 with open(args.subject_labels) as f:
   subj_labels = json.load(f)
 
-if NO_SUBJECT_ID in subj_labels:
-  print('No subject indicator unexpectedly listed as a real subject id', file = sys.stderr)
-  sys.exit(1)
-else:
-  subj_labels[NO_SUBJECT_ID] = NO_SUBJECT_LABEL
+if args.track_no_subject:
+  if NO_SUBJECT_ID in subj_labels:
+    print('No subject indicator unexpectedly listed as a real subject id', file = sys.stderr)
+    sys.exit(1)
+  else:
+    subj_labels[NO_SUBJECT_ID] = NO_SUBJECT_LABEL
 
 for topic_count in args.topic_counts:
   path = f'{args.output_dir}/{os.path.basename(args.prefix)}_{topic_count}'
@@ -120,7 +122,8 @@ for topic_count in args.topic_counts:
     #None: this doc id is in the doc->subjects mapping and has no subjects
     #NaN: this doc_id does not exist in the doc->subjects mapping (so I assume this is a bug earlier in the pipeline, generating a bad doc id)
     #So convert None (but not NaN) into an indicator of that there is no subject
-    subj_proportions = subj_proportions.assign(subj_id = subj_proportions.subj_id.map(lambda x: NO_SUBJECT_ID if x is None else x))
+    if args.track_no_subject:
+      subj_proportions = subj_proportions.assign(subj_id = subj_proportions.subj_id.map(lambda x: NO_SUBJECT_ID if x is None else x))
 
     #create a single-col df, indexed by subject id, with proportion of that subject id in the topic (count of times that subject appeared, multiplied by the proportion of the document that corresponds to the topic)
     subj_proportions = subj_proportions.explode('subj_id') #explode lists of subjects out to separate rows
