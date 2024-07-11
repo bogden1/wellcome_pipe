@@ -72,14 +72,14 @@ for topic_count in args.topic_counts:
     top_10 = t_s.nlargest(10)
     fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
     for x, y in top_10.items():
-      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
+      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
     fig.update_layout(showlegend = False)
     fig.write_image(f'{path}/topic_{topic}_topdocs.svg')
 
     over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
     fig = px.scatter(over_40 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
     for x, y in over_40.items():
-      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
+      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
     fig.update_layout(showlegend = False)
     fig.write_image(f'{path}/topic_{topic}_docs40.svg')
 
