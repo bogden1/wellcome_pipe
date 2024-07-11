@@ -37,15 +37,18 @@ for file in args.infiles:
 
   #link to doc
   title = tree.find('./g[@class="infolayer"]/g[@class="g-gtitle"]', namespaces = {'': SVG_NAMESPACE, 'xlink': XLINK_NAMESPACE})
-  children = list(title)
-  if len(children) != 1: raise
-  text = children[0]
-  if text.tag != f'{{{SVG_NAMESPACE}}}text': raise
-  title.remove(text)
-  ET.SubElement(title, 'a', {'xlink:href': f'{WELLCOME}/{text.text}'}).append(text)
-  if text.text in doc_labels:
-    text.text=f'{doc_labels[text.text]["full"]} ({text.text})'
-  text.set('style', "font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 10px; fill: rgb(42, 63, 95); opacity: 1; white-space: pre;")
+  if title:
+    children = list(title)
+    if len(children) != 1:
+      print(f'Too many title children in {file}', file = sys.stderr)
+      sys.exit(1)
+    text = children[0]
+    if text.tag != f'{{{SVG_NAMESPACE}}}text': raise
+    title.remove(text)
+    ET.SubElement(title, 'a', {'xlink:href': f'{WELLCOME}/{text.text}'}).append(text)
+    if text.text in doc_labels:
+      text.text=f'{doc_labels[text.text]["full"]} ({text.text})'
+    text.set('style', "font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 10px; fill: rgb(42, 63, 95); opacity: 1; white-space: pre;")
 
   #smaller annotations -- commented out as I managed to get meta_bars to generate something sensible, but keeping for reference
   #for annotation in tree.findall('//text[@class="annotation-text"]', namespaces = {'': SVG_NAMESPACE, 'xlink': XLINK_NAMESPACE}):

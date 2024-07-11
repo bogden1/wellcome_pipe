@@ -29,6 +29,9 @@ parser.add_argument('--output-dir',
 parser.add_argument('--force',
                     action = 'store_true',
                     help = 'Permit writing into an existing directory')
+parser.add_argument('--all',
+                    action = 'store_true',
+                    help = 'Generate a bar chart for every topic, not just the top 10. May take hours.')
 args = parser.parse_args()
 
 #path stuff
@@ -64,17 +67,34 @@ for topic_count in args.topic_counts:
   df = pd.read_csv(in_fnam, sep = '\t', index_col = 0, names = ['doc_id', 'author'] + topics).join(metadata, validate = '1:1')
 
   doc_topics_df = df.set_index(df.cat_id).drop(['year', 'author', 'cat_id'], axis = 1)
-  counter = 0
-  for cat_id, row in doc_topics_df.iterrows():
-    print(f'Writing chart for doc {counter}/{len(doc_topics_df)} ({cat_id})...', end = '')
-    title = cat_id
-    text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
-    text = [f'{x}' for x in row.index.to_list()]
-    fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
+  for topic in doc_topics_df.columns:
+    t_s = doc_topics_df[topic]
+    top_10 = t_s.nlargest(10)
+    fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+    for x, y in top_10.items():
+      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
     fig.update_layout(showlegend = False)
-    for x, y in row.items():
-      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
-    
-    fig.write_image(f'{path}/{cat_id}.svg')
-    print(' done')
-    counter += 1
+    fig.write_image(f'{path}/topic_{topic}_topdocs.svg')
+
+    over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
+    fig = px.scatter(over_40 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+    for x, y in over_40.items():
+      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
+    fig.update_layout(showlegend = False)
+    fig.write_image(f'{path}/topic_{topic}_docs40.svg')
+
+  if args.all:
+    counter = 0
+    for cat_id, row in doc_topics_df.iterrows():
+      print(f'Writing chart for doc {counter}/{len(doc_topics_df)} ({cat_id})...', end = '')
+      title = cat_id
+      text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
+      text = [f'{x}' for x in row.index.to_list()]
+      fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
+      fig.update_layout(showlegend = False)
+      for x, y in row.items():
+        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
+
+      fig.write_image(f'{path}/{cat_id}.svg')
+      print(' done')
+      counter += 1
