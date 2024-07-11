@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 #Usage example:
-#find processed_clouds -type f -name '*_docs.svg' -o -name '*_subjects.svg' | sed 's#.*#./svg_postproc.py &#' | nice parallel
+#find processed_clouds -type f -name '*_docs.svg' -o -name '*_subjects.svg' | sed 's#.*#./svg_postproc.py & --short-titles short_titles.json#' | nice parallel
 import os
 import sys
 import json
+import argparse
 import xml.etree.ElementTree as ET
 
 skipped_files = 0
 skipped_links = 0
-with open('short_titles.json') as f:
+
+parser = argparse.ArgumentParser()
+parser.add_argument('topic_nums', nargs = '+')
+parser.add_argument('--doc-labels', default = 'data/corpora/example/normalized/short_titles.json')
+args = parser.parse_args()
+
+with open(args.doc_labels) as f:
   doc_labels = json.load(f)
 
 WELLCOME='https://wellcomecollection.org/works/'
 WELLCOME_SEARCH = 'https://wellcomecollection.org/search/works'
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 ET.register_namespace('', SVG_NAMESPACE)
-for file in sys.argv[1:]:
+for file in args.topic_nums:
   tree = ET.parse(file)
   root = tree.getroot()
   root.set('xmlns:xlink', 'http://www.w3.org/1999/xlink')
