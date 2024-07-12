@@ -8,18 +8,17 @@ def save(fnam, data):
     pickle.dump(data, f)
 
 def load(fnam, base = None):
-  if args.force:
+  if args.force or not os.path.exists(fnam):
     return None
   if not base is None:
+    if not os.path.exists(base):
+      return None
     if os.path.getmtime(base) > os.path.getmtime(fnam):
       return None
-  if os.path.exists(fnam):
-    with open(fnam, 'rb') as f:
-      d = pickle.load(f)
-    print(f'loaded {fnam}')
-    return d
-  else:
-    return None
+  with open(fnam, 'rb') as f:
+    d = pickle.load(f)
+  print(f'loaded {fnam}')
+  return d
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input')
