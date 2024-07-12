@@ -214,7 +214,7 @@ with open(os.path.splitext(args.output_subjects)[0] + '_map.json', 'w') as f:
 with open(args.output_titles, 'w') as f:
   json.dump(title_dict, f, indent = 2)
 
-with open('short_' + args.output_titles, 'w') as f:
+with open(os.path.splitext(args.output_titles)[0] + '_short.json', 'w') as f:
   json.dump(short_title_dict, f, indent = 2)
 
 #dump some stats

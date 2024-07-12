@@ -1,7 +1,8 @@
 #!/bin/bash
 #example: ./browse_svg.sh 17xx_lemmatized_sorted_50
 name="${1:?Must give a name to build from, such as 17xx_lemmatized_sorted_50}"
-output="${2:-.}"
+input="${2:-.}"
+output="${3:-.}"
 mkdir -p "${output}/${name}/figures"
 {
 cat <<EOF
@@ -20,22 +21,22 @@ topic_count="${name##*_}"
 topic_count=$((topic_count - 1))
 for topic in `seq 0 ${topic_count}`; do
   echo "<td><a name='topic_${topic}'/><a href='docs_${topic}.html'>${topic}</a></td>"
-  echo '<td style="border: 1px solid">'; cat clouds/${name}/topic_${topic}.svg; echo '</td>'
-  echo '<td style="border: 1px solid">'; cat clouds/${name}/pp_topic_${topic}_subjects.svg; echo '</td>'
-  echo '<td style="border: 1px solid">'; cat clouds/${name}/pp_topic_${topic}_docs.svg; echo '</td>'
+  echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/topic_${topic}.svg; echo '</td>'
+  echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_subjects.svg; echo '</td>'
+  echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_docs.svg; echo '</td>'
   echo '</tr>'
 done
 echo '</table></body></html>'
 } > "${output}/${name}/topics.html"
 
-cp -l figures/"${name}"/pp_* "${output}/${name}"/figures/
+cp -l "${input}"/figures/"${name}"/pp_* "${output}/${name}"/figures/
 
 for topic in `seq 0 ${topic_count}`; do
 {
   echo '<html><body><table><tr><td>'
-  cat figures/${name}/pp_topic_${topic}_topdocs.svg
+  cat ${input}/figures/${name}/pp_topic_${topic}_topdocs.svg
   echo '</td></tr><tr><td>'
-  cat figures/${name}/pp_topic_${topic}_docs40.svg
+  cat ${input}/figures/${name}/pp_topic_${topic}_docs40.svg
   echo '</td></tr></table></body></html>'
 } > "${output}/${name}/docs_${topic}.html"
 done

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #Usage example:
-#find clouds -type f -name '*_docs.svg' -o -name '*_subjects.svg' | grep -v '/pp_[^/]*.svg' | sed 's#.*#./svg_postproc.py & --doc-labels short_titles.json#' | nice parallel
+#find clouds -type f -name '*_docs.svg' -o -name '*_subjects.svg' | grep -v '/pp_[^/]*.svg' | sed 's#.*#./svg_postproc.py & --doc-labels titles_short.json#' | nice parallel
 import os
 import sys
 import json
@@ -12,7 +12,7 @@ skipped_links = 0
 
 parser = argparse.ArgumentParser()
 parser.add_argument('infiles', nargs = '+')
-parser.add_argument('--doc-labels', default = 'data/corpora/example/normalized/short_titles.json')
+parser.add_argument('--doc-labels', default = 'data/corpora/example/normalized/titles_short.json')
 args = parser.parse_args()
 
 with open(args.doc_labels) as f:
@@ -35,7 +35,7 @@ for file in args.infiles:
       if text.text in doc_labels:
         query = f'figures/pp_{doc_labels[text.text]}.svg'
       else:
-        print(f'{text.text} not in short_titles.json, skipping link', file = sys.stderr)
+        print(f'{text.text} not in {args.doc_labels}, skipping link', file = sys.stderr)
         skipped_links += 1
         continue
     else:
