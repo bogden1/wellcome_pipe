@@ -68,6 +68,7 @@ for topic_count in args.topic_counts:
 
   doc_topics_df = df.set_index(df.cat_id).drop(['year', 'author', 'cat_id'], axis = 1)
   for topic in doc_topics_df.columns:
+    print(f'Writing summary charts for topic {topic}...', end = '')
     t_s = doc_topics_df[topic]
     top_10 = t_s.nlargest(10)
     fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
@@ -82,6 +83,7 @@ for topic_count in args.topic_counts:
       fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
     fig.update_layout(showlegend = False)
     fig.write_image(f'{path}/topic_{topic}_docs40.svg')
+    print(' done')
 
   if args.all:
     counter = 0
