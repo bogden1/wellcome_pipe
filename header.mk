@@ -35,5 +35,5 @@ TOPICS_DOC         := $(PREFIX)-composition_$(TOPICS_COUNT).txt
 TOPICS_WEIGHTS     := $(PREFIX)-topic_work_weights_$(TOPICS_COUNT)
 TOPICS_DIAGNOSTICS := $(PREFIX)-diagnostics_$(TOPICS_COUNT).txt
 MALLET_BIN := /home/bogden/Downloads/Mallet-202108/bin/mallet
-MALLET_MEM := 10g
+MALLET_MEM := 20g
 endif
