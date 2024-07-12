@@ -27,8 +27,17 @@ subject_clouds: $(SUBJECT_CLOUD_IMGS) $(SUBJECT_CLOUD_DATA)
 
 doc_clouds: $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA)
 
+clean:
+	rm -rf $(CLOUDS)/ $(FIGS)/ web/$(BASE_PREFIX)_$(TOPICS_COUNT)/
+
 clean_topic_clouds:
 	rm -f $(TOPIC_CLOUD_IMGS) $(TOPIC_CLOUD_DATA)
+
+clean_subject_clouds:
+	rm -f $(SUBJECT_CLOUDS_IMGS) $(SUBJECT_CLOUD_DATA) $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA)
+
+clean_doc_figs:
+	rm -f $(INDIVIDUAL_DOC_FIGS) $(SUMMARY_DOC_FIGS)
 
 $(TOPIC_CLOUD_IMGS) $(TOPIC_CLOUD_DATA) &: topic_clouds.py   _wordcloud.py $(TOPICS_PREFIX)_counts.df | $(CLOUD_DIR)
 	python3 topic_clouds.py   --force --prefix $(PREFIX) --output-dir $(CLOUD_DIR) --colorize $(TOPICS_COUNT)

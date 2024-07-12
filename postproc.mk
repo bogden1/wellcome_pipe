@@ -8,6 +8,9 @@ dataframes: $(DATAFRAMES)
 
 subjects: $(SUBJECTS).json $(SUBJECTS)_map.json $(SUBJECTS).LOG
 
+clean:
+	rm -f $(DATAFRAMES) $(SUBJECTS).json $(SUBJECTS)_map.json $(SUBJECTS).LOG $(TITLES).json $(TITLES)_short.json
+
 #Grouped target: one invocation builds all targets
 #TODO: Add args to the tool to allow building the targets independently
 $(DATAFRAMES) &: dataframes.py $(TOPICS_FILE)
