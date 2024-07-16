@@ -59,9 +59,12 @@ $(CLOUDS)/pp_topic_%_docs.svg: svg_postproc.py $(TITLES)_short.json $(CLOUDS)/to
 	python3 svg_postproc.py --doc-labels $(TITLES)_short.json $(CLOUDS)/topic_$(*)_docs.svg
 
 $(FIGS)/pp_%.svg:              svg_fixup.py    $(TITLES).json       $(FIGS)/%.svg
-	python3 svg_fixup.py --doc-labels $(TITLES).json $(FIGS)/$(*)_uncompressed.svg
-	scour -i $(FIGS)/$(*)_uncompressed.svg -o $(FIGS)/$(*).svg
-	rm $(FIGS)/$(*)_uncompressed.svg
+	python3 svg_fixup.py --doc-labels $(TITLES).json $(FIGS)/$(*).svg
+	scour -i $(FIGS)/pp_$(*).svg -o $(FIGS)/ppp_$(*).svg
+	echo '<html><body><p><a href="javascript:history.back()">Back to topics</a></p>' > $(FIGS)/wrapper_$(*).html
+	cat $(FIGS)/ppp_$(*).svg >> $(FIGS)/wrapper_$(*).html
+	echo '</body></html>' >> $(FIGS)/wrapper_$(*).html
+	mv $(FIGS)/ppp_$(*).svg $(FIGS)/pp_$(*).svg
 
 $(FIG_DIR):
 	mkdir $@

@@ -20,7 +20,14 @@ EOF
 topic_count="${name##*_}"
 topic_count=$((topic_count - 1))
 for topic in `seq 0 ${topic_count}`; do
-  echo "<td><a name='topic_${topic}'/><a href='docs_${topic}.html'>${topic}</a></td>"
+  cat <<EOF
+<td>
+  <p><a name='topic_${topic}'/></p>
+  <p><a href='#topic_${topic}'>${topic}</a></p>
+  <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
+  <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p>
+</td>
+EOF
   echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/topic_${topic}.svg; echo '</td>'
   echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_subjects.svg; echo '</td>'
   echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_docs.svg; echo '</td>'
@@ -29,17 +36,4 @@ done
 echo '</table></body></html>'
 } > "${output}/${name}/topics.html"
 
-cp -l "${input}"/figures/"${name}"/pp_* "${output}/${name}"/figures/
-
-for topic in `seq 0 ${topic_count}`; do
-{
-  echo '<html><body><table><tr><td>'
-  cat ${input}/figures/${name}/pp_topic_${topic}_topdocs.svg
-  echo '</td></tr><tr><td>'
-  cat ${input}/figures/${name}/pp_topic_${topic}_docs40.svg
-  echo '</td></tr></table></body></html>'
-} > "${output}/${name}/docs_${topic}.html"
-done
-
-#height: 510px; width: 510px; }
-#style='width:10px'
+cp -l "${input}"/figures/"${name}"/wrapper*.html "${output}/${name}/figures/"

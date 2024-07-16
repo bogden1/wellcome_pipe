@@ -33,7 +33,7 @@ for file in args.infiles:
       query = f'{WELLCOME_SEARCH}?production.dates.from=1700&production.dates.to=1799&subjects.label=%22{text.text.title()}%22'
     elif os.path.splitext(file)[0].endswith('_docs'):
       if text.text in doc_labels:
-        query = f'figures/pp_{doc_labels[text.text]}.svg'
+        query = f'figures/wrapper_{doc_labels[text.text]}.html'
       else:
         print(f'{text.text} not in {args.doc_labels}, skipping link', file = sys.stderr)
         skipped_links += 1
