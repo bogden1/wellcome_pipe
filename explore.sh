@@ -14,6 +14,7 @@ cat <<EOF
 </style>
 </head>
 <body>
+<p><a href="../index.html">Home</a></p>
 <table>
 <tr><td>#</td><td>Topic Cloud</td><td>Subject Cloud</td><td>Doc Cloud</td></tr>
 EOF
