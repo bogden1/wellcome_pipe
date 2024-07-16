@@ -16,6 +16,8 @@ stemmed: $(STEMMED)
 
 lemmatized: $(LEMMATIZED)
 
+lemmatized_serial: $(LEMMATIZED)
+
 %.depunctuated: lemmastemma/depunctuator.py
 	$< $*
 
@@ -31,3 +33,5 @@ lemmatized: $(LEMMATIZED)
 
 $(MALLETIZED):
 	mkdir $@
+
+.NOTPARALLEL: lemmatized_serial
