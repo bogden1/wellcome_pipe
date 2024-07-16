@@ -12,7 +12,7 @@ TITLES    := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX)_titles
 CLEAN   := $(wildcard $(NORMALIZED)/$(CORPUS)/*.clean.txt) #I am assuming the OCRNormalizer has been run. These are the initial input files for this Makefile family.
 DEPUNCTUATED := $(addsuffix .depunctuated, $(CLEAN))
 STEMMED := $(addsuffix .stemmed, $(DEPUNCTUATED))
-LEMMATIZED := $(addsuffix $(STRIP_ENTITIES).lemmatized, $(DEPUNCTUATED))
+LEMMATIZED := $(addsuffix .lemmatized, $(DEPUNCTUATED))
 
 TRUNCATED := $(LEMMATIZED) #change these two together -- must be STEMMED/stemmed or LEMMATIZED/lemmatized
 TRUNC_SUFFIX := lemmatized
