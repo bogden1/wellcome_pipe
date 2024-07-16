@@ -58,7 +58,9 @@ $(CLOUDS)/pp_topic_%_docs.svg: svg_postproc.py $(TITLES)_short.json $(CLOUDS)/to
 	python3 svg_postproc.py --doc-labels $(TITLES)_short.json $(CLOUDS)/topic_$(*)_docs.svg
 
 $(FIGS)/pp_%.svg:              svg_fixup.py    $(TITLES).json       $(FIGS)/%.svg
-	python3 svg_fixup.py --doc-labels $(TITLES).json $(FIGS)/$(*).svg
+	python3 svg_fixup.py --doc-labels $(TITLES).json $(FIGS)/$(*)_uncompressed.svg
+	scour -i $(FIGS)/$(*)_uncompressed.svg -o $(FIGS)/$(*).svg
+	rm $(FIGS)/$(*)_uncompressed.svg
 
 $(FIG_DIR):
 	mkdir $@
