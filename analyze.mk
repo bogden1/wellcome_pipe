@@ -11,9 +11,10 @@ SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_docs40.svg, $(TOPIC_NUMS)) $(p
 INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.svg#')
 FINAL_FIGS   = $(patsubst %, $(FIGS)/pp_%,   $(notdir $(INDIVIDUAL_DOC_FIGS) $(SUMMARY_DOC_FIGS)))
 FINAL_CLOUDS = $(patsubst %, $(CLOUDS)/pp_%, $(notdir $(SUBJECT_CLOUD_IMGS) $(DOC_CLOUD_IMGS)))
+WEB_DIR := web
 
-explore: final_figs final_clouds | web
-	./explore.sh $(BASE_PREFIX)_$(TOPICS_COUNT) $(TOP_DIR) web
+explore: final_figs final_clouds | $(WEB_DIR)
+	./explore.sh $(BASE_PREFIX)_$(TOPICS_COUNT) $(TOP_DIR) $(WEB_DIR)
 
 final_figs: $(FINAL_FIGS)
 
@@ -68,5 +69,5 @@ $(FIG_DIR):
 $(CLOUD_DIR):
 	mkdir $@
 
-web:
+$(WEB_DIR):
 	mkdir $@
