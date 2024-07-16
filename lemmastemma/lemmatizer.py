@@ -4,6 +4,7 @@
 
 import sys
 import spacy
+import shutil
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -22,11 +23,16 @@ for in_fnam in args.infiles:
   if len(text) > nlp.max_length:
     print(f'{in_fnam} too long, truncating ({len(text)} > {nlp.max_length})', file = sys.stderr)
     text = text[0:nlp.max_length]
-  doc = nlp(text)
-  if(args.strip_entities):
-    tokens = filter(lambda x: x.ent_type_ == '', doc)
-  else:
-    tokens = doc #bit ugly, but happens to work here
-  lemmas = [x.lemma_ for x in tokens]
-  with open(out_fnam, 'w', encoding = 'utf-8') as f:
-    print(" ".join(lemmas).strip(), file = f)
+  try:
+    doc = nlp(text)
+    if(args.strip_entities):
+      tokens = filter(lambda x: x.ent_type_ == '', doc)
+    else:
+      tokens = doc #bit ugly, but happens to work here
+    lemmas = [x.lemma_ for x in tokens]
+    with open(out_fnam, 'w', encoding = 'utf-8') as f:
+      print(" ".join(lemmas).strip(), file = f)
+  except Exception as e:
+    print(f'Error while lemmatizing {in_fnam}: {e}', file = sys.stderr)
+    print(f'  Skipping lemmatization, instead copying {in_fnam} to {out_fnam}', file = sys.stderr)
+    shutil.copy2(in_fnam, out_fnam)
