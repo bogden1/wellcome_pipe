@@ -2,6 +2,7 @@
 #re https://spacy.io/usage/spacy-101#annotations-pos-deps
 #python -m spacy download en_core_web_trf
 
+import sys
 import spacy
 import argparse
 
@@ -12,12 +13,16 @@ args = parser.parse_args()
 
 spacy.require_gpu()
 nlp = spacy.load("en_core_web_trf")
-nlp.max_length = 3000000 #Alarmingly high -- may consume ~30GB of RAM!
+nlp.max_length = 2000000 #Alarmingly high -- may consume ~20GB of RAM!
 
 for in_fnam in args.infiles:
   out_fnam = in_fnam + '.lemmatized'
   with open(in_fnam, encoding = 'utf-8') as f:
-    doc = nlp(f.read())
+    text = f.read()
+    if len(text) > nlp.max_length:
+      print(f'{in_fnam} too long, truncating ({len(text)} > {nlp.max_length})', file = sys.stderr)
+      text = text[0:nlp.max_length]
+    doc = nlp(text)
   if(args.strip_entities):
     tokens = filter(lambda x: x.ent_type_ == '', doc)
   else:
