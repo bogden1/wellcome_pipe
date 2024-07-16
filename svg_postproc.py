@@ -30,7 +30,7 @@ for file in args.infiles:
   #Happen to know that all text is directly below root
   for text in root.findall('./text', namespaces = {'': SVG_NAMESPACE}):
     if os.path.splitext(file)[0].endswith('_subjects'):
-      query = f'{WELLCOME_SEARCH}?subjects.label=%22{text.text.title()}%22'
+      query = f'{WELLCOME_SEARCH}?production.dates.from=1700&production.dates.to=1799&subjects.label=%22{text.text.title()}%22'
     elif os.path.splitext(file)[0].endswith('_docs'):
       if text.text in doc_labels:
         query = f'figures/pp_{doc_labels[text.text]}.svg'
