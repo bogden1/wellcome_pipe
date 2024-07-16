@@ -19,10 +19,10 @@ for in_fnam in args.infiles:
   out_fnam = in_fnam + '.lemmatized'
   with open(in_fnam, encoding = 'utf-8') as f:
     text = f.read()
-    if len(text) > nlp.max_length:
-      print(f'{in_fnam} too long, truncating ({len(text)} > {nlp.max_length})', file = sys.stderr)
-      text = text[0:nlp.max_length]
-    doc = nlp(text)
+  if len(text) > nlp.max_length:
+    print(f'{in_fnam} too long, truncating ({len(text)} > {nlp.max_length})', file = sys.stderr)
+    text = text[0:nlp.max_length]
+  doc = nlp(text)
   if(args.strip_entities):
     tokens = filter(lambda x: x.ent_type_ == '', doc)
   else:
