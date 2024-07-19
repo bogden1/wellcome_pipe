@@ -9,6 +9,7 @@ import pickle
 import argparse
 import pandas as pd
 import plotly.express as px
+from multiprocessing import Pool
 
 def up_to_date(in_fnam, out_fnam):
   return os.path.exists(out_fnam) and os.path.getmtime(out_fnam) > os.path.getmtime(in_fnam) and os.path.getmtime(out_fnam) > os.path.getmtime(sys.argv[0])
@@ -103,22 +104,26 @@ for topic_count in args.topic_counts:
         fig.write_image(out_fnam)
 
   if args.documents:
-    counter = 0
+    def draw_doc(title, row, fnam):
+      text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
+      text = [f'{x}' for x in row.index.to_list()]
+      fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
+      fig.update_layout(showlegend = False)
+      for x, y in row.items():
+        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
+      fig.write_image(fnam)
+
+    pool = Pool()
+    orders = []
     for cat_id, row in doc_topics_df.iterrows():
       print(f'Writing chart for doc {cat_id}')
       out_fnam = f'{path}/{cat_id}.svg'
       if up_to_date(in_fnam, out_fnam):
         print(f'  Skipped doc {cat_id} as already up to date')
       else:
-        print(f'Writing chart for doc {counter}/{len(doc_topics_df)} ({cat_id})...', end = '')
-        title = cat_id
-        text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
-        text = [f'{x}' for x in row.index.to_list()]
-        fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
-        fig.update_layout(showlegend = False)
-        for x, y in row.items():
-          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
-  
-        fig.write_image(f'{path}/{cat_id}.svg')
-        print(' done')
-        counter += 1
+        orders.append((cat_id, row, out_fnam))
+        if len(orders) == os.cpu_count():
+          pool.starmap(draw_doc, orders)
+          orders = []
+    if len(orders):
+      pool.starmap(draw_doc, orders)
