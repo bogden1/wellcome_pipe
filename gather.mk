@@ -6,7 +6,7 @@ include header.mk
 tsv: $(PREMALLET)
 
 $(PREMALLET): hatori_data.py $(METADATA) $(DESTOPPED)
-	python3 $< $(METADATA) --text-dir $(NORMALIZED)/$(CORPUS) --text-suffix .clean.txt.$(TRUNC_SUFFIX).destopped --strip-json $(METADATA).stripped > $@
+	python3 $< $(METADATA) --text-dir $(NORMALIZED)/$(CORPUS) --text-suffix .clean.txt.depunctuated.$(TRUNC_SUFFIX).destopped --strip-json $(METADATA).stripped > $@
 
 depunctuated: $(DEPUNCTUATED)
 
