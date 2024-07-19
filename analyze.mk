@@ -50,10 +50,10 @@ $(SUBJECT_CLOUD_IMGS) $(SUBJECT_CLOUD_DATA) $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA) 
 	python3 meta_clouds.py --force --prefix $(PREFIX) --output-dir $(CLOUD_DIR) --mallet-metadata $(PREMALLET) --subject-labels $(SUBJECTS)_map.json --doc-subjects $(SUBJECTS).json --doc-labels $(TITLES).json --colorize $(TOPICS_COUNT)
 
 $(INDIVIDUAL_DOC_FIGS) &: meta_bars.py $(PREMALLET) $(TOPICS_DOC) | $(FIG_DIR)
-	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --all
+	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --documents
 
 $(SUMMARY_DOC_FIGS) &:    meta_bars.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR) #INDIVIDUAL_DOC_FIGS just to force this to run after that, so we don't risk two incantations writing to the same file
-	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT)
+	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --topics
 
 $(CLOUDS)/pp_topic_%_subjects.svg: $(CLOUDS)/topic_%_subjects.svg svg_postproc.py
 	python3 svg_postproc.py --doc-labels $(TITLES)_short.json $<

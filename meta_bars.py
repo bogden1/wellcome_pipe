@@ -29,9 +29,12 @@ parser.add_argument('--output-dir',
 parser.add_argument('--force',
                     action = 'store_true',
                     help = 'Permit writing into an existing directory')
-parser.add_argument('--all',
+parser.add_argument('--documents',
                     action = 'store_true',
-                    help = 'Generate a bar chart for every topic, not just the top 10. May take hours.')
+                    help = 'Generate a bar chart for every document. May take hours.')
+parser.add_argument('--topics',
+                    action = 'store_true',
+                    help = 'Generate summary charts for every topic. Pretty quick.')
 args = parser.parse_args()
 
 #path stuff
@@ -67,28 +70,29 @@ for topic_count in args.topic_counts:
   df = pd.read_csv(in_fnam, sep = '\t', index_col = 0, names = ['doc_id', 'author'] + topics).join(metadata, validate = '1:1')
 
   doc_topics_df = df.set_index(df.cat_id).drop(['year', 'author', 'cat_id'], axis = 1)
-  for topic in doc_topics_df.columns:
-    print(f'Writing summary charts for topic {topic}...', end = '')
-    t_s = doc_topics_df[topic]
-    top_10 = t_s.nlargest(10)
-    fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
-    for x, y in top_10.items():
-      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
-    fig.update_layout(showlegend = False)
-    fig.write_image(f'{path}/topic_{topic}_topdocs.svg')
+  if args.topics:
+    for topic in doc_topics_df.columns:
+      print(f'Writing summary charts for topic {topic}...', end = '')
+      t_s = doc_topics_df[topic]
+      top_10 = t_s.nlargest(10)
+      fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+      for x, y in top_10.items():
+        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
+      fig.update_layout(showlegend = False)
+      fig.write_image(f'{path}/topic_{topic}_topdocs.svg')
 
-    over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
-    if len(over_40) > 150:
-      print(f"Truncating topic {topic}'s docs40 from {len(over_40)} to 150 rows", file = sys.stderr)
-      over_40 = over_40.head(150)
-    fig = px.scatter(over_40 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
-    for x, y in over_40.items():
-      fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
-    fig.update_layout(showlegend = False)
-    fig.write_image(f'{path}/topic_{topic}_docs40.svg')
-    print(' done')
+        over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
+        if len(over_40) > 150:
+          print(f"Truncating topic {topic}'s docs40 from {len(over_40)} to 150 rows", file = sys.stderr)
+          over_40 = over_40.head(150)
+        fig = px.scatter(over_40 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+        for x, y in over_40.items():
+          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
+        fig.update_layout(showlegend = False)
+        fig.write_image(f'{path}/topic_{topic}_docs40.svg')
+      print(' done')
 
-  if args.all:
+  if args.documents:
     counter = 0
     for cat_id, row in doc_topics_df.iterrows():
       print(f'Writing chart for doc {counter}/{len(doc_topics_df)} ({cat_id})...', end = '')
