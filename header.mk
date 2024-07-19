@@ -5,23 +5,32 @@ SHELL := bash
 CORPUS := example
 OUT_SUFFIX := sorted
 NORMALIZED := $(abspath data/corpora/$(CORPUS)/normalized/)
-METADATA  := $(NORMALIZED)/$(CORPUS).jsonl #An initial input file
+
+#An initial input file
+METADATA  := $(NORMALIZED)/$(CORPUS).jsonl
+
 PREMALLET := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX).tsv
 SUBJECTS  := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX)_subjects
 TITLES    := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX)_titles
-CLEAN   := $(wildcard $(NORMALIZED)/$(CORPUS)/*.clean.txt) #I am assuming the OCRNormalizer has been run. These are the initial input files for this Makefile family.
+
+#I am assuming the OCRNormalizer has been run. These are the initial input files for this Makefile family.
+CLEAN   := $(wildcard $(NORMALIZED)/$(CORPUS)/*.clean.txt)
+
 DEPUNCTUATED := $(addsuffix .depunctuated, $(CLEAN))
 STEMMED := $(addsuffix .stemmed, $(DEPUNCTUATED))
 LEMMATIZED := $(addsuffix .lemmatized, $(DEPUNCTUATED))
 
-TRUNCATED := $(LEMMATIZED) #change these two together -- must be STEMMED/stemmed or LEMMATIZED/lemmatized
+#change these two together -- must be STEMMED/stemmed or LEMMATIZED/lemmatized
+TRUNCATED := $(LEMMATIZED)
 TRUNC_SUFFIX := lemmatized
 
 DESTOPPED := $(addsuffix .destopped, $(TRUNCATED))
+
+#TODO: Rewrite other *DIRs in terms of TOP_DIR
 MALLETIZED = $(abspath $(NORMALIZED)/../malletized)
 CLOUD_DIR := $(abspath $(NORMALIZED)/../clouds)
 FIG_DIR   := $(abspath $(NORMALIZED)/../figures)
-TOP_DIR   := $(abspath $(NORMALIZED)/..) #TODO: Rewrite other *DIRs in terms of TOP_DIR
+TOP_DIR   := $(abspath $(NORMALIZED)/..)
 TOPICS_COUNT := 500
 BASE_PREFIX := $(CORPUS)_$(TRUNC_SUFFIX)_$(OUT_SUFFIX)
 CLOUDS := $(CLOUD_DIR)/$(BASE_PREFIX)_$(TOPICS_COUNT)
