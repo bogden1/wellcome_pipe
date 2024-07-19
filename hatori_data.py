@@ -25,7 +25,9 @@ with open(args.jsonl) as f:
     if count % args.progress_interval == 0: print(f'{len(written)}/{count}', file = sys.stderr)
     work = json.loads(line)
     text_path = glob(f'{args.text_dir}/*@{work["id"]}{args.text_suffix}')
-    if len(text_path) == 0: continue #this one had no OCR text (or does not exist in the output directory for some other reason)
+    if len(text_path) == 0:
+      print(f'{args.text_dir}/*@{work["id"]}{args.text_suffix} does not glob. Skipping.', file = sys.stderr)
+      continue
     if len(text_path) > 1:
       print(f'Unexpected multiple hits: "{args.text_dir}/*@{work["id"]}{args.text_suffix}" matches {len(text_path)} files. Skipping.', file = sys.stderr)
       continue
