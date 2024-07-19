@@ -43,7 +43,7 @@ with open(args.jsonl) as f:
 
     year = 0
     if len(work['production']) != 0 and len(work['production'][0]['dates']) != 0:
-      year = re.sub('\D', '', work['production'][0]['dates'][0]['label'].strip())
+      year = re.sub('\\D', '', work['production'][0]['dates'][0]['label'].strip())
       if len(year) == 0: year = 0
 
     short_title = re.sub('[^a-zA-Z0-9]+', ' ', work['title'])
