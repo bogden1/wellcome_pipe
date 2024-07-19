@@ -10,6 +10,9 @@ import argparse
 import pandas as pd
 import plotly.express as px
 
+def up_to_date(in_fnam, out_fnam):
+  return os.path.exists(out_fnam) and os.path.getmtime(out_fnam) > os.path.getmtime(in_fnam) and os.path.getmtime(out_fnam) > os.path.getmtime(sys.argv[0])
+
 parser = argparse.ArgumentParser()
 parser.add_argument('topic_counts',
                     nargs = '+',
@@ -72,15 +75,23 @@ for topic_count in args.topic_counts:
   doc_topics_df = df.set_index(df.cat_id).drop(['year', 'author', 'cat_id'], axis = 1)
   if args.topics:
     for topic in doc_topics_df.columns:
-      print(f'Writing summary charts for topic {topic}...', end = '')
       t_s = doc_topics_df[topic]
-      top_10 = t_s.nlargest(10)
-      fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
-      for x, y in top_10.items():
-        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
-      fig.update_layout(showlegend = False)
-      fig.write_image(f'{path}/topic_{topic}_topdocs.svg')
+      out_fnam = f'{path}/topic_{topic}_topdocs.svg'
+      print(f'Writing summary charts for topic {topic}')
+      if up_to_date(in_fnam, out_fnam):
+        print(f'  Skipped "top 10" for topic {topic} as already up to date')
+      else:
+        top_10 = t_s.nlargest(10)
+        fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+        for x, y in top_10.items():
+          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10)
+        fig.update_layout(showlegend = False)
+        fig.write_image(out_fnam)
 
+      out_fnam = f'{path}/topic_{topic}_docs40.svg'
+      if up_to_date(in_fnam, out_fnam):
+        print(f'  Skipped "over 40%" for topic {topic} as already up to date')
+      else:
         over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
         if len(over_40) > 150:
           print(f"Truncating topic {topic}'s docs40 from {len(over_40)} to 150 rows", file = sys.stderr)
@@ -89,21 +100,25 @@ for topic_count in args.topic_counts:
         for x, y in over_40.items():
           fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:figures/pp_{x}.svg">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
         fig.update_layout(showlegend = False)
-        fig.write_image(f'{path}/topic_{topic}_docs40.svg')
-      print(' done')
+        fig.write_image(out_fnam)
 
   if args.documents:
     counter = 0
     for cat_id, row in doc_topics_df.iterrows():
-      print(f'Writing chart for doc {counter}/{len(doc_topics_df)} ({cat_id})...', end = '')
-      title = cat_id
-      text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
-      text = [f'{x}' for x in row.index.to_list()]
-      fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
-      fig.update_layout(showlegend = False)
-      for x, y in row.items():
-        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
-
-      fig.write_image(f'{path}/{cat_id}.svg')
-      print(' done')
-      counter += 1
+      print(f'Writing chart for doc {cat_id}')
+      out_fnam = f'{path}/{cat_id}.svg'
+      if up_to_date(in_fnam, out_fnam):
+        print(f'  Skipped doc {cat_id} as already up to date')
+      else:
+        print(f'Writing chart for doc {counter}/{len(doc_topics_df)} ({cat_id})...', end = '')
+        title = cat_id
+        text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
+        text = [f'{x}' for x in row.index.to_list()]
+        fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
+        fig.update_layout(showlegend = False)
+        for x, y in row.items():
+          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
+  
+        fig.write_image(f'{path}/{cat_id}.svg')
+        print(' done')
+        counter += 1
