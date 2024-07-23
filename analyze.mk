@@ -11,10 +11,13 @@ SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_docs40.svg, $(TOPIC_NUMS)) $(p
 INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.svg#')
 FINAL_FIGS   = $(patsubst %, $(FIGS)/pp_%,   $(notdir $(INDIVIDUAL_DOC_FIGS) $(SUMMARY_DOC_FIGS)))
 FINAL_CLOUDS = $(patsubst %, $(CLOUDS)/pp_%, $(notdir $(SUBJECT_CLOUD_IMGS) $(DOC_CLOUD_IMGS)))
+WRAPPED_FIGS = $(patsubst pp_%.svg, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
 WEB_DIR := web
 
 explore: final_figs final_clouds | $(WEB_DIR)
 	./explore.sh $(BASE_PREFIX)_$(TOPICS_COUNT) $(TOP_DIR) $(WEB_DIR)
+
+wrappers: $(WRAPPED_FIGS)
 
 final_figs: $(FINAL_FIGS)
 
@@ -61,10 +64,12 @@ $(CLOUDS)/pp_topic_%_docs.svg: svg_postproc.py $(TITLES)_short.json $(CLOUDS)/to
 $(FIGS)/pp_%.svg:              svg_fixup.py    $(TITLES).json       $(FIGS)/%.svg
 	python3 svg_fixup.py --doc-labels $(TITLES).json $(FIGS)/$(*).svg
 	scour -i $(FIGS)/pp_$(*).svg -o $(FIGS)/ppp_$(*).svg
-	echo '<html><body><p><a href="javascript:history.back()">Back to topics</a></p>' > $(FIGS)/wrapper_$(*).html
-	cat $(FIGS)/ppp_$(*).svg >> $(FIGS)/wrapper_$(*).html
-	echo '</body></html>' >> $(FIGS)/wrapper_$(*).html
 	mv $(FIGS)/ppp_$(*).svg $(FIGS)/pp_$(*).svg
+
+$(FIGS)/wrapper_%.html: $(FIGS)/pp_%.svg
+	@echo '<html><body><p><a href="javascript:history.back()">Back to topics</a></p>' > $(FIGS)/wrapper_$(*).html
+	@cat $(FIGS)/pp_$(*).svg >> $(FIGS)/wrapper_$(*).html
+	@echo '</body></html>' >> $(FIGS)/wrapper_$(*).html
 
 $(FIG_DIR):
 	mkdir $@
