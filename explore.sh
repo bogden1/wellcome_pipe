@@ -24,7 +24,7 @@ for topic in `seq 0 ${topic_count}`; do
   cat <<EOF
 <td>
   <p><a name='topic_${topic}'/></p>
-  <p><a href='#topic_${topic}'>${topic}</a></p>
+  <p><a href='topic_${topic}.html'>${topic}</a></p>
   <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
   <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p>
 </td>
@@ -33,6 +33,35 @@ EOF
   echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_subjects.svg; echo '</td>'
   echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_docs.svg; echo '</td>'
   echo '</tr>'
+
+  #also output a separate "this topic only" view
+  cat > "${output}/${name}/topic_${topic}.html" <<EOF
+<html>
+<head>
+<style>
+  table { border-spacing: 75px; }
+  td { font-size: 20px; font-weight: bold; text-align: center; vertical-align: top }
+</style>
+</head>
+<body>
+<p><a href="javascript:history.back()">Back</a></p>
+<table>
+<tr><td>#</td><td>Topic Cloud</td><td>Subject Cloud</td><td>Doc Cloud</td></tr>
+<td>
+  <p><a href='topics.html#topic_${topic}'>${topic}</a></p>
+  <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
+  <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p>
+</td>
+EOF
+  { echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/topic_${topic}.svg; echo '</td>'; }             >> "${output}/${name}/topic_${topic}.html"
+  { echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_subjects.svg; echo '</td>'; } >> "${output}/${name}/topic_${topic}.html"
+  { echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/pp_topic_${topic}_docs.svg; echo '</td>'; }     >> "${output}/${name}/topic_${topic}.html"
+  cat >> "${output}/${name}/topic_${topic}.html" <<EOF
+</tr>
+</table>
+</body>
+</html>
+EOF
 done
 echo '</table></body></html>'
 } > "${output}/${name}/topics.html"
