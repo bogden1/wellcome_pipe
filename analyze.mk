@@ -14,7 +14,7 @@ FINAL_CLOUDS = $(patsubst %, $(CLOUDS)/pp_%, $(notdir $(SUBJECT_CLOUD_IMGS) $(DO
 WRAPPED_FIGS = $(patsubst pp_%.svg, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
 WEB_DIR := web
 
-explore: final_figs final_clouds | $(WEB_DIR)
+explore: wrappers final_clouds | $(WEB_DIR)
 	./explore.sh $(BASE_PREFIX)_$(TOPICS_COUNT) $(TOP_DIR) $(WEB_DIR)
 
 wrappers: $(WRAPPED_FIGS)
