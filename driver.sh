@@ -39,3 +39,10 @@ for x in 10 50 100 250 500; do
   build 17xx_rebuild "${x}"
   build 17xx_rebuild_entitystripped "${x}" 'STRIP_ENTITIES=--strip-entities'
 done
+
+#index has to run after everything else is finished (or at least after all of the _title.json files are generated)
+workon wellcome_pipe
+python3 index.py web data/corpora/17xx_rebuild/normalized/17xx_rebuildsorted_titles.json \
+	             data/corpora/17xx_rebuild_entitystripped/normalized/17xx_rebuild_entitystrippedsorted_titles.json \
+		     > LOGS/index.OUT 2> LOGS/index.ERR
+echo $? > LOGS/index.XIT
