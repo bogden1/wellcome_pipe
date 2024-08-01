@@ -110,7 +110,7 @@ for topic_count in args.topic_counts:
       fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
       fig.update_layout(showlegend = False)
       for x, y in row.items():
-        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topics.html#topic_{x}">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
+        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topic_{x}.html">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
       fig.write_image(fnam)
 
     pool = Pool()
