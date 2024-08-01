@@ -89,19 +89,19 @@ for topic_count in args.topic_counts:
         fig.update_layout(showlegend = False)
         fig.write_image(out_fnam)
 
-      out_fnam = f'{path}/topic_{topic}_docs40.svg'
-      if up_to_date(in_fnam, out_fnam):
-        print(f'  Skipped "over 40%" for topic {topic} as already up to date')
-      else:
-        over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
-        if len(over_40) > 150:
-          print(f"Truncating topic {topic}'s docs40 from {len(over_40)} to 150 rows", file = sys.stderr)
-          over_40 = over_40.head(150)
-        fig = px.scatter(over_40 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
-        for x, y in over_40.items():
-          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:wrapper_{x}.html">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
-        fig.update_layout(showlegend = False)
-        fig.write_image(out_fnam)
+      #out_fnam = f'{path}/topic_{topic}_docs40.svg'
+      #if up_to_date(in_fnam, out_fnam):
+      #  print(f'  Skipped "over 40%" for topic {topic} as already up to date')
+      #else:
+      #  over_40 = t_s[t_s > 0.4].sort_values(ascending = False)
+      #  if len(over_40) > 150:
+      #    print(f"Truncating topic {topic}'s docs40 from {len(over_40)} to 150 rows", file = sys.stderr)
+      #    over_40 = over_40.head(150)
+      #  fig = px.scatter(over_40 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+      #  for x, y in over_40.items():
+      #    fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:wrapper_{x}.html">{x}</a>', showarrow = False, yshift = 10, textangle = -90)
+      #  fig.update_layout(showlegend = False)
+      #  fig.write_image(out_fnam)
 
   if args.documents:
     def draw_doc(title, row, fnam):
@@ -110,7 +110,8 @@ for topic_count in args.topic_counts:
       fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
       fig.update_layout(showlegend = False)
       for x, y in row.items():
-        fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topic_{x}.html">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
+        if y > 0.05:
+          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topic_{x}.html">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
       fig.write_image(fnam)
 
     pool = Pool()

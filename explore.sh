@@ -26,7 +26,7 @@ for topic in `seq 0 ${topic_count}`; do
   <p><a name='topic_${topic}'/></p>
   <p><a href='topic_${topic}.html'>${topic}</a></p>
   <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
-  <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p>
+  <!-- <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p> -->
 </td>
 EOF
   echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/topic_${topic}.svg; echo '</td>'
@@ -50,7 +50,7 @@ EOF
 <td>
   <p><a href='topics.html#topic_${topic}'>${topic}</a></p>
   <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
-  <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p>
+  <!-- <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p> -->
 </td>
 EOF
   { echo '<td style="border: 1px solid">'; cat ${input}/clouds/${name}/topic_${topic}.svg; echo '</td>'; }             >> "${output}/${name}/topic_${topic}.html"
@@ -67,3 +67,4 @@ echo '</table></body></html>'
 } > "${output}/${name}/topics.html"
 
 cp -l "${input}"/figures/"${name}"/wrapper*.html "${output}/${name}/figures/"
+rm -f "${output}/${name}"/figures/wrapper_topic_*_docs40.html
