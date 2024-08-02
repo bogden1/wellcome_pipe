@@ -35,3 +35,4 @@ with open(f'{root}/index.html', 'w') as index_handle:
             print(f'<li><a target="_blank" href="{d}/figures/pp_{mapping[title]}.svg">[{topics_name}] {title}</a></li>', file = docs_handle)
           print('</ul></body></html>', file = docs_handle)
   print('</table>', file = index_handle)
+  print('</body></html>', file = index_handle)
