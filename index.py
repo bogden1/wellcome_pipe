@@ -22,15 +22,16 @@ with open(f'{root}/index.html', 'w') as index_handle:
       topics_name = table[d]
     else:
       topics_name = d
+    print('<ul>', file = index_handle)
     if os.path.exists(f'{root}/{d}/topics.html'):
-      print(f'<details>', file = index_handle)
-      print(f'<summary style="cursor: pointer"><a target="_blank" href="{d}/topics.html">{topics_name}</summary>', file = index_handle)
-      print('<ul>', file = index_handle)
+      print(f'<li>{topics_name}<a target="_blank" href="{d}/topics.html">Topics</a> <a href="{d}_documents.html">Documents</a></li>', file = index_handle)
       for titles_file in sys.argv[2:]:
         with open(titles_file) as tf_handle:
           titles = json.load(tf_handle)
         mapping = {titles[x]['full']: x for x in titles}
-        for title in sorted(mapping.keys(), key = lambda x: x.translate(str.maketrans('','',string.punctuation))):
-          print(f'<li><a target="_blank" href="{d}/figures/pp_{mapping[title]}.svg">[{topics_name}] {title}</a></li>', file = index_handle)
-      print('</ul>', file = index_handle)
-      print('</details>', file = index_handle)
+        with open(f'{root}/{d}_documents.html', 'w') as docs_handle:
+          print(f'<html><body><h3>All documents in {d}</h3><ul>', file = docs_handle)
+          for title in sorted(mapping.keys(), key = lambda x: x.translate(str.maketrans('','',string.punctuation))):
+            print(f'<li><a target="_blank" href="{d}/figures/pp_{mapping[title]}.svg">[{topics_name}] {title}</a></li>', file = docs_handle)
+          print('</ul></body></html>', file = docs_handle)
+    print('</ul>', file = index_handle)
