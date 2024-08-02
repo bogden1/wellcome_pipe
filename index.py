@@ -24,7 +24,7 @@ with open(f'{root}/index.html', 'w') as index_handle:
     else:
       topics_name = d
     if os.path.exists(f'{root}/{d}/topics.html'):
-      print(f'<tr><td>{topics_name}</td><td><a target="_blank" href="{d}/topics.html">Topics</a></td><td><a href="{d}/documents.html">Documents</a></td></tr>', file = index_handle)
+      print(f'<tr><td>{topics_name}</td><td><a href="{d}/topics.html">Topics</a></td><td><a href="{d}/documents.html">Documents</a></td></tr>', file = index_handle)
       for titles_file in sys.argv[2:]:
         with open(titles_file) as tf_handle:
           titles = json.load(tf_handle)
@@ -32,7 +32,7 @@ with open(f'{root}/index.html', 'w') as index_handle:
         with open(f'{root}/{d}/documents.html', 'w') as docs_handle:
           print(f'<html><body><p><a href="../index.html">Home</a></p><h3>All documents in {d}</h3><ul>', file = docs_handle)
           for title in sorted(mapping.keys(), key = lambda x: x.translate(str.maketrans('','',string.punctuation))):
-            print(f'<li><a target="_blank" href="{d}/figures/pp_{mapping[title]}.svg">[{topics_name}] {title}</a></li>', file = docs_handle)
+            print(f'<li><a href="{d}/figures/pp_{mapping[title]}.svg">[{topics_name}] {title}</a></li>', file = docs_handle)
           print('</ul></body></html>', file = docs_handle)
   print('</table>', file = index_handle)
   print('</body></html>', file = index_handle)
