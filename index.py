@@ -30,7 +30,7 @@ with open(f'{root}/index.html', 'w') as index_handle:
           titles = json.load(tf_handle)
         mapping = {titles[x]['full']: x for x in titles}
         with open(f'{root}/{d}/documents.html', 'w') as docs_handle:
-          print(f'<html><body><h3>All documents in {d}</h3><ul>', file = docs_handle)
+          print(f'<html><body><p><a href="../index.html">Home</a></p><h3>All documents in {d}</h3><ul>', file = docs_handle)
           for title in sorted(mapping.keys(), key = lambda x: x.translate(str.maketrans('','',string.punctuation))):
             print(f'<li><a target="_blank" href="{d}/figures/pp_{mapping[title]}.svg">[{topics_name}] {title}</a></li>', file = docs_handle)
           print('</ul></body></html>', file = docs_handle)
