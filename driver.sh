@@ -24,14 +24,14 @@ build() {
 
   echo "Started ${identifier}"
   workon lemmastemma2
-  phase "${identifier}" gather_depunctuated      make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" depunctuated
-  phase "${identifier}" gather_truncated_serial  make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" truncated_serial
-  phase "${identifier}" gather                   make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
-  phase "${identifier}" topics                   make -f topics.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
+  phase "${identifier}" gather_depunctuated      make -f gather.mk   -l 18 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" depunctuated
+  phase "${identifier}" gather_truncated_serial  make -f gather.mk   -l 18 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" truncated_serial
+  phase "${identifier}" gather                   make -f gather.mk   -l 18 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
+  phase "${identifier}" topics                   make -f topics.mk   -l 18 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
 
   workon wellcome_pipe
-  phase "${identifier}" postproc                 make -f postproc.mk -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
-  phase "${identifier}" analyze                  make -f analyze.mk  -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
+  phase "${identifier}" postproc                 make -f postproc.mk -l 18 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
+  phase "${identifier}" analyze                  make -f analyze.mk  -l 18 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
   echo "Finished ${identifier}"
 }
 
