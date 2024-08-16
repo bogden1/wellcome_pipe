@@ -17,12 +17,13 @@ TITLES    := $(NORMALIZED)/$(CORPUS)$(OUT_SUFFIX)_titles
 CLEAN   := $(wildcard $(NORMALIZED)/$(CORPUS)/*.clean.txt)
 
 DEPUNCTUATED := $(addsuffix .depunctuated, $(CLEAN))
-STEMMED := $(addsuffix .stemmed, $(DEPUNCTUATED))
-LEMMATIZED := $(addsuffix .lemmatized, $(DEPUNCTUATED))
 
-#change these two together -- must be STEMMED/stemmed or LEMMATIZED/lemmatized
-TRUNCATED := $(LEMMATIZED)
 TRUNC_SUFFIX := lemmatized
+ifeq ($(TRUNC_SUFFIX), lemmatized)
+TRUNCATED := $(addsuffix .lemmatized, $(DEPUNCTUATED))
+else
+TRUNCATED := $(addsuffix .stemmed, $(DEPUNCTUATED))
+endif
 
 DESTOPPED := $(addsuffix .destopped, $(TRUNCATED))
 

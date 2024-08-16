@@ -25,7 +25,7 @@ build() {
   echo "Started ${identifier}"
   workon lemmastemma2
   phase "${identifier}" gather_depunctuated      make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" depunctuated
-  phase "${identifier}" gather_lemmatized_serial make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" lemmatized_serial
+  phase "${identifier}" gather_truncated_serial  make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@" truncated_serial
   phase "${identifier}" gather                   make -f gather.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
   phase "${identifier}" topics                   make -f topics.mk   -l 12 -j CORPUS=${corpus} TOPICS_COUNT=${count} "$@"
 

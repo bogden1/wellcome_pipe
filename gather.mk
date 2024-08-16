@@ -12,11 +12,9 @@ depunctuated: $(DEPUNCTUATED)
 
 destopped: $(DESTOPPED)
 
-stemmed: $(STEMMED)
+truncated: $(TRUNCATED)
 
-lemmatized: $(LEMMATIZED)
-
-lemmatized_serial: $(LEMMATIZED)
+truncated_serial: $(TRUNCATED)
 
 %.depunctuated: lemmastemma/depunctuator.py
 	$< $*
@@ -34,4 +32,4 @@ lemmatized_serial: $(LEMMATIZED)
 $(MALLETIZED):
 	mkdir $@
 
-.NOTPARALLEL: lemmatized_serial
+.NOTPARALLEL: truncated_serial
