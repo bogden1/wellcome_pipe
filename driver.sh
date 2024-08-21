@@ -49,5 +49,6 @@ done
 workon wellcome_pipe
 python3 index.py web data/corpora/17xx_rebuild/normalized/17xx_rebuildsorted_titles.json \
 	             data/corpora/17xx_rebuild_entitystripped/normalized/17xx_rebuild_entitystrippedsorted_titles.json \
+	             data/corpora/17xx_rebuild_stemmed/normalized/17xx_rebuild_stemmedsorted_titles.json \
 		     > LOGS/"${PREFIX}"_index_OUT 2> LOGS/"${PREFIX}"_index_ERR
 echo $? > LOGS/"${PREFIX}"_index_XIT
