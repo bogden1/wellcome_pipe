@@ -17,4 +17,4 @@ $(DATAFRAMES) &: dataframes.py $(TOPICS_FILE)
 	python3 $< $(TOPICS_FILE)
 
 $(SUBJECTS).json $(SUBJECTS)_map.json $(SUBJECTS).LOG $(TITLES).json $(TITLES)_short.json &: metadata.py $(PREMALLET)
-	python3 $< --pre-mallet $(PREMALLET) --output-subjects $(SUBJECTS).json --output-titles $(TITLES).json &> $(SUBJECTS).LOG
+	python3 $< --pre-mallet $(PREMALLET) --output-subjects $(SUBJECTS).json --output-titles $(TITLES).json

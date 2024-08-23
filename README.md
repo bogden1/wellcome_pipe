@@ -20,7 +20,17 @@ Otherwise, the process is:
 * Do any post-processing on what comes back to get the sub-corpus that you want:
   * In the simplest case, where you only collected what you actually wanted, this could be just:
   * `mkdir -p data/corpora/example/normalized; cp -rl data/text/example/ data/corpora/example/normalized/example; cp -l data/inputs/example.json data/corpora/example/normalized/example.jsonl`
-  * And then run Ted Underwood's OCRNormalizer (https://github.com/tedunderwood/DataMunging.git) on data/corpora/example/normalized/example
+  * You might want to run split\_corpus.py to split it into smaller chunks e.g. ./split\_corpus.py example
+  * And then run Ted Underwood's OCRNormalizer (https://github.com/tedunderwood/DataMunging.git) on data/corpora/example/normalized/example, e.g. 
+    * cd DataMunging/OCRnormalizer
+    * python3 OCRnormalizer.py
+      * And then answer as follows:
+        * Do you want the full spiel? n
+        * Do you want to unpack .zip or .txt files? txt
+        * Which option do you prefer? 1w
+        * Path to the folder that contains source files? (correct answer for you, e.g. ../../wellcome\_pipe/data/corpora/example\_split/normalized/example\_split)
+        * 1) Text only or 2) text-plus-wordcounts? 2
+    * That last one is REALLY IMPORTANT -- if you select 1 you will be bitten by a bug that cuts off the processing after 200 files
 * Install the dependencies for lemmastemma (e.g. in a virtualenv)
   * `pip install -r lemmastemma/requirements.txt`
 * `make -j topics`

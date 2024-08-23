@@ -112,7 +112,7 @@ stops = set(stopwords.words('english'))
 with open(args.pre_mallet) as in_file:
   for line in in_file:
     #compute identifier for lookup
-    identifier = line.split('\t', maxsplit = 1)[0] #get the first field (author, short title, identifier)
+    identifier = line.split('\t', maxsplit = 1)[0] #get the first field (author, short title, split, identifier)
     identifier = identifier.split(' ')[-1] #hence this is the actual identifier
     if len(identifier) != 8:
       print(f'Skipping bad identifier: {identifier}', file = sys.stderr)
@@ -128,8 +128,6 @@ with open(args.pre_mallet) as in_file:
 
     #look up titles
     if 'title' in data and len(data['title']):
-      if identifier in title_dict: raise
-      if identifier in short_title_dict: raise
       title = data['title']
       words = list(filter(lambda x: not x.lower() in stops, word_tokenize(title.translate(str.maketrans('', '', string.punctuation)))))
       short_title = words.pop(0)
@@ -137,6 +135,10 @@ with open(args.pre_mallet) as in_file:
         short_title += ' ' + words.pop(0)
       if len(words):
         short_title += '...'
+      if identifier in title_dict:
+        if title_dict[identifier]['full'] == title: continue
+        else: raise
+      if identifier in short_title_dict: raise
       title_dict[identifier] = {
         'full':  title,
       }

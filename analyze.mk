@@ -33,7 +33,7 @@ subject_clouds: $(SUBJECT_CLOUD_IMGS) $(SUBJECT_CLOUD_DATA)
 doc_clouds: $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA)
 
 clean:
-	rm -rf $(CLOUDS)/ $(FIGS)/ web/$(BASE_PREFIX)_$(TOPICS_COUNT)/
+	rm -rf $(CLOUDS)/ $(FIGS)/ $(WEB_DIR)/$(BASE_PREFIX)_$(TOPICS_COUNT)/
 
 clean_topic_clouds:
 	rm -f $(TOPIC_CLOUD_IMGS) $(TOPIC_CLOUD_DATA)
