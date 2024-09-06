@@ -120,7 +120,7 @@ with open(args.pre_mallet) as in_file:
       continue
 
     #do the lookup
-    data = lookup(identifier)
+    data = lookup.raw_json_lookup(identifier)
     if data is None:
       print(f'No entry for id "{identifier}" in {args.db}:{args.table}[{args.data_col}]', file = sys.stderr)
       count['Missing in database'] += 1

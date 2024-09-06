@@ -10,7 +10,7 @@ class WorksLookup:
     self.verbose = False
     self.conn = psycopg2.connect(**db_args)
 
-  def __call__(self, identifier):
+  def raw_json_lookup(self, identifier):
     cur = self.conn.cursor()
     if self.verbose:
       print(f"select {self.data_col} from {self.table} where id='{identifier}'")
@@ -21,6 +21,35 @@ class WorksLookup:
     elif len(rows) > 1: raise #I expect we could get more efficient by grabbing more than one row at a time
     if len(rows[0]) != 1: raise
     return ast.literal_eval(rows[0][0])
+
+  def field_lookup(self, identifier, field, single = True):
+    cmd = f"select {field} from {self.table} where id='{identifier}'"
+    if self.verbose:
+      print(cmd)
+    cur = self.conn.cursor()
+    cur.execute(cmd)
+    results = cur.fetchall() #list of tuples. each list element is a row in the results
+    if single:
+      if len(results) != 1 or len(results[0]) != 1:
+        return None
+      else:
+        return results[0][0]
+    return results
+
+  def cooked_json_lookup(self, identifier, field, jsonpath, single = True):
+    cmd = f"select jsonb_path_query({field}, '{jsonpath}') from {self.table} where id='{identifier}'"
+    if self.verbose:
+      print(cmd)
+    cur = self.conn.cursor()
+    cur.execute(cmd)
+    results = cur.fetchall() #list of tuples. each list element is a row in the results
+    if single:
+      if len(results) != 1 or len(results[0]) != 1:
+        return None
+      else:
+        return results[0][0]
+    return results
+
 
 if __name__ == '__main__':
   import os

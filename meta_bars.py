@@ -6,13 +6,33 @@ import os
 import sys
 import json
 import pickle
+import plotly
 import argparse
+import requests
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+from works_lookup import WorksLookup
 from multiprocessing import Pool
+from jsonpath_ng.ext import parse as json_parse
 
 def up_to_date(in_fnam, out_fnam):
   return os.path.exists(out_fnam) and os.path.getmtime(out_fnam) > os.path.getmtime(in_fnam) and os.path.getmtime(out_fnam) > os.path.getmtime(sys.argv[0])
+
+works_lookup = WorksLookup('j', None, database = 'wellcome_works')
+def get_text_url(identifier):
+  manifest_url = works_lookup.cooked_json_lookup(identifier, 'items', '$.locations[*].url')
+  if manifest_url is None:
+    print(f'{identifier} lookup failed, or it does not have exactly 1 mainfest URL', file = sys.stderr)
+    return None
+  text_url = [x.value for x in json_parse("sequences[*].rendering[?@.format='text/plain'].@id").find(requests.get(manifest_url).json())]
+  if len(text_url) != 1:
+    print(f'{identifier} (via {manifest_url}) does not have exactly 1 plain text rendering', file = sys.stderr)
+    return None
+  return text_url[0]
+
+def get_title(identifier):
+  return works_lookup.field_lookup(identifier, 'title')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('topic_counts',
@@ -39,6 +59,7 @@ parser.add_argument('--documents',
 parser.add_argument('--topics',
                     action = 'store_true',
                     help = 'Generate summary charts for every topic. Pretty quick.')
+parser.add_argument('--works-db', default = 'wellcome-works')
 args = parser.parse_args()
 
 #path stuff
@@ -60,7 +81,13 @@ else:
   metadata = metadata.rename_axis('doc_id')
   with open(args.mallet_metadata + '.df', 'wb') as f:
     pickle.dump(metadata, f)
+
+#NB "metadata" here is the premallet tsv file (or a dataframe cache of it)
+#I think this new line here is adding the split (the chunk that I am on)
+metadata = metadata.assign(split_id = metadata['cat_id'].str.split().str[-2])
 metadata = metadata.assign(cat_id = metadata['cat_id'].str.split().str[-1]) #get the Wellcome catalogue doc id, given current TSV format
+#metadata = metadata.assign(text_url = lambda x: get_text_url(x.cat_id))
+print(metadata)
 
 for topic_count in args.topic_counts:
   path = f'{args.output_dir}/{os.path.basename(args.prefix)}_{topic_count}'
@@ -73,10 +100,13 @@ for topic_count in args.topic_counts:
   topics = list(range(0, n_topics))
   df = pd.read_csv(in_fnam, sep = '\t', index_col = 0, names = ['doc_id', 'author'] + topics).join(metadata, validate = '1:1')
 
-  doc_topics_df = df.set_index(df.cat_id).drop(['year', 'author', 'cat_id'], axis = 1)
+  doc_topics_df = df.set_index([df.cat_id, df.split_id]).drop(['year', 'author', 'cat_id', 'split_id'], axis = 1)
+  #doc_topics_df = df.set_index(df.cat_id).drop(['year', 'author', 'cat_id'], axis = 1)
   if args.topics:
+    print('TOPICS')
     for topic in doc_topics_df.columns:
       t_s = doc_topics_df[topic]
+      print(t_s)
       out_fnam = f'{path}/topic_{topic}_topdocs.svg'
       print(f'Writing summary charts for topic {topic}')
       if up_to_date(in_fnam, out_fnam):
@@ -85,8 +115,11 @@ for topic_count in args.topic_counts:
         top_10 = t_s.nlargest(10)
         fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
         for x, y in top_10.items():
+          #TODO: Making x the "split" rather than repeating the doc (which is also the x axis) would make a lot of sense here
+          #Just need to work out where that information is
           fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:wrapper_{x}.html">{x}</a>', showarrow = False, yshift = 10)
         fig.update_layout(showlegend = False)
+        #fig.update_layout(barmode = 'stack')
         fig.write_image(out_fnam)
 
       #out_fnam = f'{path}/topic_{topic}_docs40.svg'
@@ -104,25 +137,39 @@ for topic_count in args.topic_counts:
       #  fig.write_image(out_fnam)
 
   if args.documents:
-    def draw_doc(title, row, fnam):
-      text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
-      text = [f'{x}' for x in row.index.to_list()]
-      fig = px.bar(row, y = row * 100, title = title, range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
-      fig.update_layout(showlegend = False)
-      for x, y in row.items():
-        if y > 0.05:
-          fig.add_annotation(x = x, y = y * 100, text = f'<a href="https:../topic_{x}.html">{x}</a>', showarrow = False, yshift = 7, xshift = -1, textangle = -90, font_size = 8)
-      fig.write_image(fnam)
+    print('DOCS')
+    def draw_doc(identifier, text_url, row, fnam):
+      #text_url = row.text_url
+      text_url = text_url.split('/')[-1]
+      row = row.set_index('split_id').drop(['cat_id'], axis=1)
+      #text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
+      #text = [f'{x}' for x in row.index.to_list()]
+      row = row.sort_index(key = lambda x: x.str.split('-').str[0].astype(int)).T
+      print(row)
+      fig = px.bar(row, x = row.index, y = row.columns, title = f'<a href="https://wellcomecollection.org/works/{identifier}">{get_title(identifier)}</a>', range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
+      fig.update_layout(xaxis_type = 'category', showlegend = False)
+      for trace in fig.data:
+        #print(trace)
+        trace.text = f'<a>{text_url}:{trace.name}</a>'
+      #splits = [f'<a>{text_url}:{x}</a>' for x in row.columns] #this one works, but I cannot use it to pass a parameter
+      #fig.update_traces(hoverinfo = 'text', text = splits)
+
+      #fig.write_image(fnam + '.svg')
+      #fig.write_html( fnam + '.html')
+      #fig.write_json( fnam + '.json')
+      with open(fnam + '.div', 'w') as f:
+        print(plotly.offline.plot(fig, include_plotlyjs = False, output_type = 'div'), file = f) #re https://stackoverflow.com/a/38032952 and /a/36376371
 
     pool = Pool()
     orders = []
-    for cat_id, row in doc_topics_df.iterrows():
-      print(f'Writing chart for doc {cat_id}')
-      out_fnam = f'{path}/{cat_id}.svg'
-      if up_to_date(in_fnam, out_fnam):
-        print(f'  Skipped doc {cat_id} as already up to date')
+    print(doc_topics_df)
+    for identifier, row in doc_topics_df.groupby(level='cat_id'):
+      print(f'Writing chart for doc {identifier}')
+      out_fnam = f'{path}/{identifier}'
+      if False: #up_to_date(in_fnam, out_fnam):
+        print(f'  Skipped doc {identifier} as already up to date')
       else:
-        orders.append((cat_id, row, out_fnam))
+        orders.append((identifier, get_text_url(identifier), row.reset_index(), out_fnam))
         if len(orders) == os.cpu_count():
           pool.starmap(draw_doc, orders)
           orders = []

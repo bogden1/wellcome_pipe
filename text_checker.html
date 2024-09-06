@@ -1,0 +1,42 @@
+<!-- For testing the word lookup code in wrapper_head.html
+     This page will lookup text in the same fashion
+-->
+<html>
+<head>
+<script>
+const prefix = document.createElement('p')
+const content = document.createElement('p')
+const urlParams = new URLSearchParams(window.location.search)
+
+var proxy = urlParams.get('p') 
+if(proxy)
+  proxy = 'https://justcors.com/' + proxy + '/'
+else
+  proxy = ''
+
+const id = urlParams.get('id') || 'b21496365' //this is the text api id of record with works.json id of unjynpvq
+const start = parseInt(urlParams.get('start'),10) || 0
+const end = parseInt(urlParams.get('end'),10) || -2 // -2 because 1 will be added to it later, needs to end up as -1 to pull in the whole text
+console.log(id)
+console.log(start)
+console.log(end)
+prefix.textContent = 'WORDS ' + start + ' - ' + end
+fetch(proxy + "https://api.wellcomecollection.org/text/v1/" + id)
+.then(response=>response.text())
+.then(data => {
+  const words = data.trim().split(/\s+/);
+  content.textContent = words.slice(start, end + 1).join(" ");
+})
+.catch(error => {
+  document.getElementById('text').textContent = 'Error loading words';
+})
+</script>
+</head>
+<body>
+<div id='text'/>
+<script>
+document.getElementById('text').appendChild(prefix)
+document.getElementById('text').appendChild(content)
+</script>
+</body>
+</html>

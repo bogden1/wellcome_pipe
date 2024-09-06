@@ -8,11 +8,14 @@ SUBJECT_CLOUD_DATA := $(patsubst %, $(CLOUDS)/topic_%_subjects.csv, $(TOPIC_NUMS
 DOC_CLOUD_IMGS     := $(patsubst %, $(CLOUDS)/topic_%_docs.svg,     $(TOPIC_NUMS))
 DOC_CLOUD_DATA     := $(patsubst %, $(CLOUDS)/topic_%_docs.csv,     $(TOPIC_NUMS))
 #SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_docs40.svg, $(TOPIC_NUMS)) $(patsubst %, $(FIGS)/topic_%_topdocs.svg, $(TOPIC_NUMS))
-SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_topdocs.svg, $(TOPIC_NUMS))
-INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.svg#')
-FINAL_FIGS   = $(patsubst %, $(FIGS)/pp_%,   $(notdir $(INDIVIDUAL_DOC_FIGS) $(SUMMARY_DOC_FIGS)))
+#SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_topdocs.svg, $(TOPIC_NUMS))
+#INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.svg#')
+INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.div#')
+#FINAL_FIGS   = $(patsubst %, $(FIGS)/pp_%,   $(notdir $(INDIVIDUAL_DOC_FIGS) $(SUMMARY_DOC_FIGS)))
+FINAL_FIGS   = $(patsubst %, $(FIGS)/%, $(notdir $(INDIVIDUAL_DOC_FIGS))) #$(patsubst %, $(FIGS)/pp_%,   $(notdir $(SUMMARY_DOC_FIGS)))
 FINAL_CLOUDS = $(patsubst %, $(CLOUDS)/pp_%, $(notdir $(SUBJECT_CLOUD_IMGS) $(DOC_CLOUD_IMGS)))
-WRAPPED_FIGS = $(patsubst pp_%.svg, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
+#WRAPPED_FIGS = $(patsubst pp_%.svg, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
+WRAPPED_FIGS = $(patsubst %.div, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
 WEB_DIR := web
 
 explore: wrappers final_clouds | $(WEB_DIR)
@@ -53,8 +56,8 @@ $(SUBJECT_CLOUD_IMGS) $(SUBJECT_CLOUD_DATA) $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA) 
 $(INDIVIDUAL_DOC_FIGS) &: meta_bars.py $(PREMALLET) $(TOPICS_DOC) | $(FIG_DIR)
 	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --documents
 
-$(SUMMARY_DOC_FIGS) &:    meta_bars.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR) #INDIVIDUAL_DOC_FIGS just to force this to run after that, so we don't risk two incantations writing to the same file
-	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --topics
+#$(SUMMARY_DOC_FIGS) &:    meta_bars.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR) #INDIVIDUAL_DOC_FIGS just to force this to run after that, so we don't risk two incantations writing to the same file
+#	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --topics
 
 $(CLOUDS)/pp_topic_%_subjects.svg: $(CLOUDS)/topic_%_subjects.svg svg_postproc.py
 	python3 svg_postproc.py --doc-labels $(TITLES)_short.json $<
@@ -67,10 +70,8 @@ $(FIGS)/pp_%.svg:              svg_fixup.py    $(TITLES).json       $(FIGS)/%.sv
 	scour -i $(FIGS)/pp_$(*).svg -o $(FIGS)/ppp_$(*).svg
 	mv $(FIGS)/ppp_$(*).svg $(FIGS)/pp_$(*).svg
 
-$(FIGS)/wrapper_%.html: $(FIGS)/pp_%.svg
-	@echo '<html><body><p><a href="javascript:history.back()">Back to topics</a></p>' > $(FIGS)/wrapper_$(*).html
-	@cat $(FIGS)/pp_$(*).svg >> $(FIGS)/wrapper_$(*).html
-	@echo '</body></html>' >> $(FIGS)/wrapper_$(*).html
+$(FIGS)/wrapper_%.html: $(FIGS)/%.div wrapper_head.html wrapper_foot.html
+	cat wrapper_head.html $< wrapper_foot.html > $@
 
 $(FIG_DIR):
 	mkdir $@

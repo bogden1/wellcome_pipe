@@ -73,7 +73,7 @@ with open(args.jsonl) as f:
       if(len(year) > 4): year = year[0:4]
 
       if not split:
-        split = '0-' + len(text)
+        split = f'0-{len(text)}'
       out_text = f'{author}  "{short_title}" {split}  {work["id"]}\t{year}\t{text}'
       if year in output: output[year].append(out_text)
       else: output[year] = [out_text]

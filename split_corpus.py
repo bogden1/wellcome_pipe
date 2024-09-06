@@ -6,9 +6,8 @@ import sys
 import shutil
 import argparse
 
-def chunk(in_doc, words):
-  start = 0
-  end   = args.chunk
+def chunk(in_doc, words, start = 0):
+  end   = start + args.chunk
   doclen = len(words)
   while start < doclen:
     with open(f'{output_dir}/{in_doc[:-len(args.input_ext)]}_{start}-{end-1}{args.input_ext}', 'w') as f:
@@ -20,7 +19,7 @@ def chunk_file(in_doc):
   with open(input_dir + '/' + in_doc) as f:
     words = f.read().split()
   chunk(in_doc, words)
-  chunk(in_doc, words[int(args.chunk / 2):])
+  chunk(in_doc, words, int(args.chunk / 2))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('corpus', help = 'Name of corpus', default = 'example')
@@ -38,3 +37,6 @@ shutil.copyfile(f'{input_dir}/../{args.corpus}.jsonl', f'{output_dir}/../{args.c
 
 from multiprocessing import Pool
 Pool(args.procs).map(chunk_file, filter(lambda x: re.search(r'@[^\.]+' + re.escape(args.input_ext) + r'$', x), os.listdir(input_dir)))
+
+print('Now run OCRNormalizer on')
+print(os.path.abspath(output_dir))

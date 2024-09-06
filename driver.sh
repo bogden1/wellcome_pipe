@@ -35,8 +35,7 @@ build() {
   echo "Finished ${identifier}"
 }
 
-#for x in 10 50 100 250 500; do
-for x in 10; do
+for x in 10 50 100 250 500; do
   build 17xx_rebuild                        "${x}"
   build 17xx_rebuild_split                  "${x}"
   build 17xx_rebuild_entitystripped         "${x}" 'STRIP_ENTITIES=--strip-entities'
@@ -56,3 +55,8 @@ python3 index.py web data/corpora/17xx_rebuild/normalized/17xx_rebuildsorted_tit
 	             data/corpora/17xx_rebuild_stemmed/normalized/17xx_rebuild_stemmedsorted_titles.json \
 		     > LOGS/"${PREFIX}"_index_OUT 2> LOGS/"${PREFIX}"_index_ERR
 echo $? > LOGS/"${PREFIX}"_index_XIT
+python3 index.py web_split data/corpora/17xx_rebuild_split/normalized/17xx_rebuild_splitsorted_titles.json \
+	             data/corpora/17xx_rebuild_entitystripped/normalized/17xx_rebuild_split_entitystrippedsorted_titles.json \
+	             data/corpora/17xx_rebuild_stemmed/normalized/17xx_rebuild_split_stemmedsorted_titles.json \
+		     > LOGS/"${PREFIX}"_index_split_OUT 2> LOGS/"${PREFIX}"_index_split_ERR
+echo $? > LOGS/"${PREFIX}"_index_split_XIT

@@ -1,0 +1,43 @@
+<html>
+<head>
+<!--<script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>-->
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script>
+const prefix = document.createElement('p')
+const content = document.createElement('p')
+function callback(e) {
+  var e = window.e || e;
+  if (e.target.tagName !== 'A' && e.target.tagName !== 'a')
+    return;
+
+  const urlParams = new URLSearchParams(window.location.search)
+  var proxy = urlParams.get('p')
+  if(proxy)
+    proxy = 'https://justcors.com/' + proxy + '/'
+  else
+    proxy = ''
+
+  var id = e.target.innerHTML.split(':')
+  var split = id[1].split('-')
+  var end = parseInt(split[1],10)
+  start = parseInt(split[0],10)
+  id = id[0]
+  prefix.textContent = 'WORDS ' + split.join('-');
+  fetch(proxy + "https://api.wellcomecollection.org/text/v1/" + id)
+  .then(response=>response.text())
+  .then(data => {
+    const words = data.trim().split(/\s+/);
+    content.textContent = words.slice(start, end + 1).join(" ");
+  })
+  .catch(error => {
+    document.getElementById('text').textContent = 'Error loading words';
+  })
+}
+if(document.addEventListener)
+  document.addEventListener('click', callback, false);
+else
+  document.attachEvent('onclick', callback);
+</script>
+</head>
+<body>
+<div id='doc_chart' height='75%'>
