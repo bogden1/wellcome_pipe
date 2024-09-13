@@ -8,20 +8,20 @@ SUBJECT_CLOUD_DATA := $(patsubst %, $(CLOUDS)/topic_%_subjects.csv, $(TOPIC_NUMS
 DOC_CLOUD_IMGS     := $(patsubst %, $(CLOUDS)/topic_%_docs.svg,     $(TOPIC_NUMS))
 DOC_CLOUD_DATA     := $(patsubst %, $(CLOUDS)/topic_%_docs.csv,     $(TOPIC_NUMS))
 #SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_docs40.svg, $(TOPIC_NUMS)) $(patsubst %, $(FIGS)/topic_%_topdocs.svg, $(TOPIC_NUMS))
-#SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/topic_%_topdocs.svg, $(TOPIC_NUMS))
+SUMMARY_DOC_FIGS := $(patsubst %, $(FIGS)/doclist_topic_%.html, $(TOPIC_NUMS))
 #INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.svg#')
 INDIVIDUAL_DOC_FIGS = $(shell cat $(TITLES).json | jq -r 'keys[]' | sed 's#.*#$(FIGS)/&.div#')
 #FINAL_FIGS   = $(patsubst %, $(FIGS)/pp_%,   $(notdir $(INDIVIDUAL_DOC_FIGS) $(SUMMARY_DOC_FIGS)))
-FINAL_FIGS   = $(patsubst %, $(FIGS)/%, $(notdir $(INDIVIDUAL_DOC_FIGS))) #$(patsubst %, $(FIGS)/pp_%,   $(notdir $(SUMMARY_DOC_FIGS)))
+FINAL_FIGS   = $(patsubst %.div, $(FIGS)/wrapper_%.html, $(notdir $(INDIVIDUAL_DOC_FIGS))) $(patsubst %, $(FIGS)/%, $(notdir $(SUMMARY_DOC_FIGS))) #$(patsubst %, $(FIGS)/pp_%,   $(notdir $(SUMMARY_DOC_FIGS)))
 FINAL_CLOUDS = $(patsubst %, $(CLOUDS)/pp_%, $(notdir $(SUBJECT_CLOUD_IMGS) $(DOC_CLOUD_IMGS)))
 #WRAPPED_FIGS = $(patsubst pp_%.svg, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
-WRAPPED_FIGS = $(patsubst %.div, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
+#WRAPPED_FIGS = $(patsubst %.div, $(FIGS)/wrapper_%.html, $(notdir $(FINAL_FIGS)))
 WEB_DIR := web
 
-explore: wrappers final_clouds | $(WEB_DIR)
+explore: final_figs final_clouds | $(WEB_DIR)
 	./explore.sh $(BASE_PREFIX)_$(TOPICS_COUNT) $(TOP_DIR) $(WEB_DIR)
 
-wrappers: $(WRAPPED_FIGS)
+#wrappers: $(WRAPPED_FIGS)
 
 final_figs: $(FINAL_FIGS)
 
@@ -54,7 +54,10 @@ $(SUBJECT_CLOUD_IMGS) $(SUBJECT_CLOUD_DATA) $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA) 
 	python3 meta_clouds.py --force --prefix $(PREFIX) --output-dir $(CLOUD_DIR) --mallet-metadata $(PREMALLET) --subject-labels $(SUBJECTS)_map.json --doc-subjects $(SUBJECTS).json --doc-labels $(TITLES).json --colorize $(TOPICS_COUNT)
 
 $(INDIVIDUAL_DOC_FIGS) &: meta_bars.py $(PREMALLET) $(TOPICS_DOC) | $(FIG_DIR)
-	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --documents
+	python3 meta_bars.py    --force --prefix $(PREFIX) --output-dir $(FIG_DIR) --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --documents
+
+$(FIGS)/doclist_topic_%.html: list_members.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR)
+	python3 list_members.py --force --prefix $(PREFIX) --output-dir $(FIG_DIR) --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT)
 
 #$(SUMMARY_DOC_FIGS) &:    meta_bars.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR) #INDIVIDUAL_DOC_FIGS just to force this to run after that, so we don't risk two incantations writing to the same file
 #	python3 meta_bars.py   --force --prefix $(PREFIX) --output-dir $(FIG_DIR)   --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --topics

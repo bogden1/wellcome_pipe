@@ -25,7 +25,7 @@ for topic in `seq 0 ${topic_count}`; do
 <td>
   <p><a name='topic_${topic}'/></p>
   <p><a href='topic_${topic}.html'>${topic}</a></p>
-  <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
+  <p><a href='figures/doclist_topic_${topic}.html'>Documents</a></p>
   <!-- <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p> -->
 </td>
 EOF
@@ -49,7 +49,7 @@ EOF
 <tr><td>#</td><td>Topic Cloud</td><td>Subject Cloud</td><td>Doc Cloud</td></tr>
 <td>
   <p><a href='topics.html#topic_${topic}'>${topic}</a></p>
-  <p><a href='figures/wrapper_topic_${topic}_topdocs.html'>Top 10 docs</a></p>
+  <p><a href='figures/doclist_topic_${topic}.html'>Documents</a></p>
   <!-- <p><a href='figures/wrapper_topic_${topic}_docs40.html'>&gt; 40% docs</a></p> -->
 </td>
 EOF
@@ -67,4 +67,5 @@ echo '</table></body></html>'
 } > "${output}/${name}/topics.html"
 
 cp -l "${input}"/figures/"${name}"/wrapper*.html "${output}/${name}/figures/"
-rm -f "${output}/${name}"/figures/wrapper_topic_*_docs40.html
+cp -l "${input}"/figures/"${name}"/doclist_topic_*.html "${output}/${name}/figures/"
+#rm -f "${output}/${name}"/figures/wrapper_topic_*_docs40.html
