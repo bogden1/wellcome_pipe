@@ -56,7 +56,7 @@ $(SUBJECT_CLOUD_IMGS) $(SUBJECT_CLOUD_DATA) $(DOC_CLOUD_IMGS) $(DOC_CLOUD_DATA) 
 $(INDIVIDUAL_DOC_FIGS) &: meta_bars.py $(PREMALLET) $(TOPICS_DOC) | $(FIG_DIR)
 	python3 meta_bars.py    --force --prefix $(PREFIX) --output-dir $(FIG_DIR) --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT) --documents
 
-$(FIGS)/doclist_topic_%.html: list_members.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR)
+$(SUMMARY_DOC_FIGS) &:   list_members.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR)
 	python3 list_members.py --force --prefix $(PREFIX) --output-dir $(FIG_DIR) --mallet-metadata $(PREMALLET) --force $(TOPICS_COUNT)
 
 #$(SUMMARY_DOC_FIGS) &:    meta_bars.py $(PREMALLET) $(TOPICS_DOC) $(INDIVIDUAL_DOC_FIGS) | $(FIG_DIR) #INDIVIDUAL_DOC_FIGS just to force this to run after that, so we don't risk two incantations writing to the same file

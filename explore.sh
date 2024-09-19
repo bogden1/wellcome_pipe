@@ -66,6 +66,6 @@ done
 echo '</table></body></html>'
 } > "${output}/${name}/topics.html"
 
-cp -l "${input}"/figures/"${name}"/wrapper*.html "${output}/${name}/figures/"
-cp -l "${input}"/figures/"${name}"/doclist_topic_*.html "${output}/${name}/figures/"
+minify "${input}"/figures/"${name}"/wrapper*.html -o "${output}/${name}/figures/"
+minify "${input}"/figures/"${name}"/doclist_topic_*.html -o "${output}/${name}/figures/"
 #rm -f "${output}/${name}"/figures/wrapper_topic_*_docs40.html

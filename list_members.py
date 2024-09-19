@@ -13,7 +13,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from works_lookup import WorksLookup
-from multiprocessing import Pool
 from jsonpath_ng.ext import parse as json_parse
 
 text_url_cache = {}
@@ -101,10 +100,19 @@ for topic_count in args.topic_counts:
     out_fnam = f'{path}/doclist_topic_{topic}.html'
     with open(out_fnam, 'w') as f:
       t_s = doc_topics_df[topic].sort_values(ascending=False) #descending sort of all values (i.e. not within groups according to levels of the multiindex, a global sort)
+      t_s = t_s[t_s >= 0.02]
       print('<html>', file = f)
       print('<head>', file = f)
 
-      print(r'''<script>
+      print(r'''
+<style>
+  .a { width: 30%; line-height: 2em; }
+  .b { width: 40%; line-height: 2em; white-space: pre-wrap; }
+  .c { text-align: center; } 
+  td { padding-top: 0.5em; padding-left: 0.5em; padding-right: 0.5em; padding-botton: 0.5em; vertical-align: top; }
+  table, th, td { border: 1px solid black; border-collapse: collapse; }
+</style>
+<script>
 function callback_header(e, action) {
   var e = window.e || e;
   if (e.target.tagName.toLowerCase() !== 'span')
@@ -136,7 +144,7 @@ function callback_header(e, action) {
   .then(response=>response.text())
   .then(data => {
     const words = data.trim().split(/\s+/);
-    const text = words.slice(start, end + 1).join(" ")
+    const text = words.slice(start, end + 1).join(" ").replaceAll(". ", ".\n")
     e.target.title = text
     if(action === 1) {
       const tmp = e.target.title
@@ -166,23 +174,43 @@ if(document.addEventListener)
   document.addEventListener('click', callback_click, false);
 else
   document.attachEvent('onclick', callback_click);
-</script>''', file = f)
 
-      print('</head><body><table><tr><td>Document</td><td>Split</td><td>Weight</td><tr>', file = f)
+
+window.onload = function() {
+  const splits = document.querySelectorAll('span')
+  for (var i = 0; i < 50; i++) {
+    splits[i].click()
+  }
+}
+
+function s(id) {
+''', file = f)
+      title_cache = {}
+      for index, weight in t_s.items():
+        doc_id = index[0]
+        if not (doc_id in title_cache):
+          title_cache[doc_id] = get_title(doc_id)
+      for doc_id, title in title_cache.items():
+        print(f'if (id == "{doc_id}") {{ document.write("{title}"); return; }}', file = f) 
+      print(r'} </script>', file = f)
+
+      print('</head><body><table><thead><tr><th>Document</th><th class="a">Split</th><th>Weight</th></tr></thead><tbody>', file = f)
 
       for index, weight in t_s.items():
         doc_id, split = index
         if not doc_id in text_url_cache:
           text_url_cache[doc_id] = get_text_url(doc_id)
+          if text_url_cache[doc_id] is None:
+            text_url_cache[doc_id] = '<no url>'
         text_url = text_url_cache[doc_id]
         print('<tr>', file = f)
-        print('<td>', file = f)
-        print(get_title(doc_id), file = f)
+        print('<td class="a">', file = f)
+        print(f'<script>s("{doc_id}")</script>', file = f)
         print('</td>', file = f)
-        print('<td>', file = f)
+        print('<td class="b">', file = f)
         print(f'<span id={text_url}_{split}>{split}</span>', file = f)
         print('</td>', file = f)
-        print('<td>', file = f)
-        print(weight, file = f)
+        print('<td class="c">', file = f)
+        print(f'{weight:.5f}', file = f)
         print('</td></tr>', file = f)
-      print('</table></body></html>', file = f)
+      print('</tbody></table></body></html>', file = f)

@@ -113,7 +113,7 @@ for topic_count in args.topic_counts:
         print(f'  Skipped "top 10" for topic {topic} as already up to date')
       else:
         top_10 = t_s.nlargest(10)
-        fig = px.bar(top_10 * 100, range_y = [0, 100], labels = {'index': 'Document', 'value': f'% from topic {topic}'})
+        fig = px.bar(top_10 * 100, labels = {'index': 'Document', 'value': f'% from topic {topic}'})
         for x, y in top_10.items():
           #TODO: Making x the "split" rather than repeating the doc (which is also the x axis) would make a lot of sense here
           #Just need to work out where that information is
@@ -138,15 +138,17 @@ for topic_count in args.topic_counts:
 
   if args.documents:
     print('DOCS')
-    def draw_doc(identifier, text_url, row, fnam):
+    def draw_doc(identifier, text_url, title, row, fnam):
       #text_url = row.text_url
+      if text_url is None:
+        text_url='<no url>'
       text_url = text_url.split('/')[-1]
       row = row.set_index('split_id').drop(['cat_id'], axis=1)
       #text = [f'<a href="https://example/com/topic_{x}">{x}</a>' for x in row.index.to_list()]
       #text = [f'{x}' for x in row.index.to_list()]
       row = row.sort_index(key = lambda x: x.str.split('-').str[0].astype(int)).T
       print(row)
-      fig = px.bar(row, x = row.index, y = row.columns, title = f'<a href="https://wellcomecollection.org/works/{identifier}">{get_title(identifier)}</a>', range_y = [0, 100], labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
+      fig = px.bar(row, x = row.index, y = row.columns, title = f'<a href="https://wellcomecollection.org/works/{identifier}">{title}</a>', labels = {'index': 'Topic', 'y': 'Topic %'})#, text = text)
       fig.update_layout(xaxis_type = 'category', showlegend = False)
       for trace in fig.data:
         #print(trace)
@@ -169,7 +171,7 @@ for topic_count in args.topic_counts:
       if False: #up_to_date(in_fnam, out_fnam):
         print(f'  Skipped doc {identifier} as already up to date')
       else:
-        orders.append((identifier, get_text_url(identifier), row.reset_index(), out_fnam))
+        orders.append((identifier, get_text_url(identifier), get_title(identifier), row.reset_index(), out_fnam))
         if len(orders) == os.cpu_count():
           pool.starmap(draw_doc, orders)
           orders = []
