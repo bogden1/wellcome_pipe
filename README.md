@@ -1,4 +1,4 @@
-This is most of the pipeline that turns OCR text from Wellcome Collection into data suited for HaToRI to digest.
+This is most of the pipeline that turns OCR text from Wellcome Collection into data suited for HaToRI to digest, along with tools that digest it in other ways. It's initial development is of course heavily indebted to [HaToRI](https://eight1911.github.io/hansard/page/home/) and likely makes use of HaToRI code at times.
 
 The missing bit is the part where you build your own subcorpus, which is still a manual process, but might start
 with something like e.g.:
